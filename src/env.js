@@ -1,18 +1,17 @@
-import BrowserDetect from 'browserDetect';
-import Util from 'utils';
+import { detect } from 'detect-browser';
+import MiscUtil from 'miscUtil';
 
 const Env = {};
 
-Env.getFingerprint = () => window.fgrprnt;
-
 Env.getBrowserData = () => {
   const plugins = null; // Env.getPluginsData()
+  let browser = detect();
 
   return ({
     ua: navigator.userAgent,
-    name: BrowserDetect.browser,
-    version: BrowserDetect.version,
-    platform: BrowserDetect.OS,
+    name: browser && browser.name,
+    version: browser && browser.version,
+    platform: browser && browser.os,
     language: navigator.language || navigator.userLanguage || navigator.systemLanguage,
     plugins
   });
@@ -27,7 +26,7 @@ Env.getUrlData = () => {
     hostname: l.hostname,
     pathname: l.pathname,
     protocol: l.protocol,
-    query: Util.parseQueryString(l.search)
+    query: MiscUtil.parseQueryString(l.search)
   });
 };
 
@@ -35,7 +34,7 @@ Env.getDocumentData = () => ({
   title: document.title
 });
 
-Env.getReferrerData = () => document.referrer && Util.parseUrl(document.referrer) || undefined;
+Env.getReferrerData = () => document.referrer && MiscUtil.parseUrl(document.referrer) || undefined;
 
 Env.getScreenData = () => ({
   height: screen.height,
@@ -69,8 +68,7 @@ Env.getPageloadData = () => ({
   browser: Env.getBrowserData(),
   document: Env.getDocumentData(),
   screen: Env.getScreenData(),
-  locale: Env.getLocaleData(),
-  sparrow: Env.getSparrowData()
+  locale: Env.getLocaleData()
 });
 
 Env.getPluginsData = () => {
@@ -94,14 +92,29 @@ Env.getPluginsData = () => {
   return plugins;
 };
 
+Env.getSessionId = () => {
+  const session_id = MiscUtil.store.session.getItem('scribe_sid') || MiscUtil.genGuid();
+
+  MiscUtil.store.session.setItem('scribe_sid', session_id);
+  return session_id;
+};
+
+Env.getVisitorId = () => {
+  const visitor_id = MiscUtil.store.local.getItem('scribe_vid') || MiscUtil.genGuid();
+
+  MiscUtil.store.local.setItem('scribe_vid', visitor_id);
+  return visitor_id;
+};
+
+/*
 // Todo: Should be broken out
 Env.getMMData = () => ({
   site_id: window.SiteObject.site_id,
   payway_id: window.user.payway_id,
-  comscore_id: window.Util.get_cookie('m_visitor'),
+  comscore_id: window.MiscUtil.get_cookie('m_visitor'),
   article_id: window.PageObject && window.PageObject.article_id || null,
   content_keywords: window.content_keywords,
-  consumer_location: window.Util.get_cookie('consumer_location')
+  consumer_location: window.MiscUtil.get_cookie('consumer_location')
 });
 
 // Todo: Should be broken out
@@ -111,5 +124,6 @@ Env.getSparrowData = () => ({
   controller: window.SiteObject.controller_name,
   action: window.SiteObject.action_name
 });
+*/
 
 export default Env;

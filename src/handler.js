@@ -15,8 +15,7 @@ class Handler {
     for (i = 0; i < this.handlers.length; i++) {
       try {
         this.handlers[i].apply(null, args);
-      }
-      catch (e) {
+      } catch (e) {
         onerror(e);
       }
     }

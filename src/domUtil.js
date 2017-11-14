@@ -1,4 +1,4 @@
-import Util from 'utils';
+import Util from 'miscUtil';
 
 const DomUtil = {};
 

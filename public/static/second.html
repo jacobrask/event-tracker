@@ -1,0 +1,42 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Test events</title>
+  <meta name="description" content="Test page">
+
+  <!--<link rel="stylesheet" href="css/styles.css?v=1.0">-->
+  <script src="../../lib/Scribe.js"></script>
+
+
+</head>
+
+<body>
+
+<h1>Test events</h1>
+
+<div>
+  <a id="gotost" href="./">Go to index</a>
+</div>
+<div>
+  <a id="laddaom" href="./second.html">Ladda om</a>
+</div>
+
+<script language="JavaScript">
+  var scribe =  new Scribe.Scribe({
+    tracker: new Scribe.ConsoleTracker(),
+    trackClicks: true,
+    trackHashChanges: true,
+    trackElementClicks: true,
+    trackPageViews: true,
+    waitOnTracker: false
+  }, {
+    site_id: 'test-events', // current domain by default
+    article_id: 'second-page',
+    content_keywords: 'allmant sport',
+  });
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
-const Util = {};
+const MiscHelper = {};
 
 // Needed to handle private browsing in safari and quota exceded
-Util.store = {
+MiscHelper.store = {
   getItem(storage, key) {
     return storage.getItem(key);
   },
@@ -17,16 +17,16 @@ Util.store = {
     }
   },
   session: {
-    getItem(key) {return Util.store.getItem(window.sessionStorage, key);},
-    setItem(key, value) {return Util.store.setItem(sessionStorage, key, value);}
+    getItem(key) {return MiscHelper.store.getItem(window.sessionStorage, key);},
+    setItem(key, value) {return MiscHelper.store.setItem(sessionStorage, key, value);}
   },
   local: {
-    getItem(key) {return Util.store.getItem(window.localStorage, key);},
-    setItem(key, value) {return Util.store.setItem(localStorage, key, value);}
+    getItem(key) {return MiscHelper.store.getItem(window.localStorage, key);},
+    setItem(key, value) {return MiscHelper.store.setItem(localStorage, key, value);}
   }
 };
 
-Util.copyFields = (source, target) => {
+MiscHelper.copyFields = (source, target) => {
   const createDelegate = (source, value) => function () {
     return value.apply(source, arguments);
   };
@@ -52,7 +52,7 @@ Util.copyFields = (source, target) => {
   return target;
 };
 
-Util.merge = (o1, o2) => {
+MiscHelper.merge = (o1, o2) => {
   let r;
   let key;
   let index;
@@ -68,7 +68,7 @@ Util.merge = (o1, o2) => {
     // Merge
     for (index = 0; index < o2.length; index++) {
       if (r.length > index) {
-        r[index] = Util.merge(r[index], o2[index]);
+        r[index] = MiscHelper.merge(r[index], o2[index]);
       } else {
         r.push(o2[index]);
       }
@@ -83,7 +83,7 @@ Util.merge = (o1, o2) => {
     // Merge:
     for (key in o2) {
       if (r[key] !== undefined) {
-        r[key] = Util.merge(r[key], o2[key]);
+        r[key] = MiscHelper.merge(r[key], o2[key]);
       } else {
         r[key] = o2[key];
       }
@@ -94,7 +94,7 @@ Util.merge = (o1, o2) => {
 
 };
 
-Util.toObject = olike => {
+MiscHelper.toObject = olike => {
   const o = {};
   let key;
 
@@ -105,7 +105,7 @@ Util.toObject = olike => {
   return o;
 };
 
-Util.genGuid = () => {
+MiscHelper.genGuid = () => {
   const s4 = () => Math.floor((1 + Math.random()) * 0x10000)
     .toString(16)
     .substring(1);
@@ -113,7 +113,7 @@ Util.genGuid = () => {
   return `${s4() + s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
 };
 
-Util.parseQueryString = qs => {
+MiscHelper.parseQueryString = qs => {
   const pairs = {};
 
   if (qs.length > 0) {
@@ -139,7 +139,7 @@ Util.parseQueryString = qs => {
   return pairs;
 };
 
-Util.unparseQueryString = qs => {
+MiscHelper.unparseQueryString = qs => {
   const kvs = [];
   let k;
   let v;
@@ -159,7 +159,7 @@ Util.unparseQueryString = qs => {
   return '';
 };
 
-Util.size = v => {
+MiscHelper.size = v => {
   if (v === undefined) return 0;
   else if (v instanceof Array) return v.length;
   else if (v instanceof Object) {
@@ -172,30 +172,30 @@ Util.size = v => {
   } return 1;
 };
 
-Util.mapJson = (v, f) => {
+MiscHelper.mapJson = (v, f) => {
   let vp;
   let vv;
 
   if (v instanceof Array) {
     vp = [];
     for (let i = 0; i < v.length; i++) {
-      vv = Util.mapJson(v[i], f);
+      vv = MiscHelper.mapJson(v[i], f);
 
-      if (Util.size(vv) > 0) vp.push(vv);
+      if (MiscHelper.size(vv) > 0) vp.push(vv);
     }
     return vp;
   } else if (v instanceof Object) {
     vp = {};
     for (const k in v) {
-      vv = Util.mapJson(v[k], f);
+      vv = MiscHelper.mapJson(v[k], f);
 
-      if (Util.size(vv) > 0) vp[k] = vv;
+      if (MiscHelper.size(vv) > 0) vp[k] = vv;
     }
     return vp;
   } return f(v);
 };
 
-Util.jsonify = v => Util.mapJson(v, v => {
+MiscHelper.jsonify = v => MiscHelper.mapJson(v, v => {
   if (v === '') return undefined;
 
   let r;
@@ -210,7 +210,7 @@ Util.jsonify = v => Util.mapJson(v, v => {
 
 });
 
-Util.undup = (f, cutoff) => {
+MiscHelper.undup = (f, cutoff) => {
   cutoff = cutoff || 250;
 
   let lastInvoked = 0;
@@ -229,7 +229,7 @@ Util.undup = (f, cutoff) => {
   };
 };
 
-Util.parseUrl = url => {
+MiscHelper.parseUrl = url => {
   const l = document.createElement('a');
 
   l.href = url;
@@ -242,17 +242,17 @@ Util.parseUrl = url => {
     hostname: l.hostname,
     pathname: l.pathname,
     protocol: l.protocol,
-    query: Util.parseQueryString(l.search)
+    query: MiscHelper.parseQueryString(l.search)
   };
 };
 
-Util.unparseUrl = url => `${url.protocol || ''}//${url.host || ''}${url.pathname || ''}${Util.unparseQueryString(url.query)}${url.hash || ''}`;
+MiscHelper.unparseUrl = url => `${url.protocol || ''}//${url.host || ''}${url.pathname || ''}${MiscHelper.unparseQueryString(url.query)}${url.hash || ''}`;
 
-Util.equals = (v1, v2) => {
+MiscHelper.equals = (v1, v2) => {
   const leftEqualsObject = (o1, o2) => {
     for (const k in o1) {
       if (!o1.hasOwnProperty || o1.hasOwnProperty(k)) {
-        if (!Util.equals(o1[k], o2[k])) return false;
+        if (!MiscHelper.equals(o1[k], o2[k])) return false;
       }
     }
     return true;
@@ -263,7 +263,7 @@ Util.equals = (v1, v2) => {
       if (v1.length !== v2.length) return false;
 
       for (let i = 0; i < v1.length; i++) {
-        if (!Util.equals(v1[i], v2[i])) {
+        if (!MiscHelper.equals(v1[i], v2[i])) {
           return false;
         }
       }
@@ -283,18 +283,18 @@ Util.equals = (v1, v2) => {
 
 };
 
-Util.isSamePage = (url1, url2) => {
-  url1 = url1 instanceof String ? Util.parseUrl(url1) : url1;
-  url2 = url2 instanceof String ? Util.parseUrl(url2) : url2;
+MiscHelper.isSamePage = (url1, url2) => {
+  url1 = url1 instanceof String ? MiscHelper.parseUrl(url1) : url1;
+  url2 = url2 instanceof String ? MiscHelper.parseUrl(url2) : url2;
 
   // Ignore the hash when comparing to see if two pages represent the same resource:
   return url1.protocol === url2.protocol &&
     url1.host === url2.host &&
     url1.pathname === url2.pathname &&
-    Util.equals(url1.query, url2.query);
+    MiscHelper.equals(url1.query, url2.query);
 };
 
-Util.qualifyUrl = url => {
+MiscHelper.qualifyUrl = url => {
   const escapeHTML = s => s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
 
   const el = document.createElement('div');
@@ -303,11 +303,11 @@ Util.qualifyUrl = url => {
   return el.firstChild.href;
 };
 
-Util.padLeft = (n, p, c) => {
+MiscHelper.padLeft = (n, p, c) => {
   const pad_char = typeof c !== 'undefined' ? c : '0';
   const pad = new Array(1 + p).join(pad_char);
 
   return (pad + n).slice(-pad.length);
 };
 
-export default Util;
+export default MiscHelper;

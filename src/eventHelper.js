@@ -1,25 +1,28 @@
+import MiscUtil from 'miscUtil';
+import Handler from 'handler';
+import ArrayUtil from 'arrayUtil';
 
-const Events = {};
+const EventHelper = {};
 
-Events.onready = f => {
+EventHelper.onready = f => {
   if (document.body != null) f();
-  else setTimeout(() => {Events.onready(f);}, 10);
+  else setTimeout(() => {EventHelper.onready(f);}, 10);
 };
 
-Events.onevent = (el, type, capture, f_) => {
+EventHelper.onevent = (el, type, capture, f_) => {
   const fixup = f => e => {
     if (!e) e = window.event;
 
     // Perform a shallow clone (Firefox bugs):
-    e = Util.copyFields(e);
+    e = MiscUtil.copyFields(e);
 
-    e.target    = e.target || e.srcElement;
-    e.keyCode   = e.keyCode || e.which || e.charCode;
-    e.which     = e.which || e.keyCode;
-    e.charCode  = (typeof e.which === "number") ? e.which : e.keyCode;
+    e.target = e.target || e.srcElement;
+    e.keyCode = e.keyCode || e.which || e.charCode;
+    e.which = e.which || e.keyCode;
+    e.charCode = (typeof e.which === 'number') ? e.which : e.keyCode;
     e.timeStamp = e.timeStamp || (new Date()).getTime();
 
-    if (e.target && e.target.nodeType == 3) e.target = e.target.parentNode;
+    if (e.target && e.target.nodeType === 3) e.target = e.target.parentNode;
 
     let retVal;
 
@@ -36,12 +39,12 @@ Events.onevent = (el, type, capture, f_) => {
 
   if (el.addEventListener) {
     el.addEventListener(type, f, capture);
-  } else if (el.attachEvent)  {
+  } else if (el.attachEvent) {
     el.attachEvent(`on${type}`, f);
   }
 };
 
-Events.onexit = ((() => {
+EventHelper.onexit = ((() => {
   let unloaded = false;
 
   const handler = new Handler();
@@ -53,7 +56,7 @@ Events.onexit = ((() => {
     }
   };
 
-  Events.onevent(window, 'unload', undefined, handleUnload);
+  EventHelper.onevent(window, 'unload', undefined, handleUnload);
 
   const replaceUnloader = obj => {
     const oldUnloader = obj.onunload || ((e => {}));
@@ -67,7 +70,7 @@ Events.onexit = ((() => {
 
   replaceUnloader(window);
 
-  Events.onready(() => {
+  EventHelper.onready(() => {
     replaceUnloader(document.body);
   });
 
@@ -76,16 +79,16 @@ Events.onexit = ((() => {
   };
 }))();
 
-Events.onengage = ((() => {
+EventHelper.onengage = ((() => {
   const handler = new Handler();
   const events = [];
 
-  Events.onready(() => {
-    Events.onevent(document.body, 'mouseover', true, e => {
+  EventHelper.onready(() => {
+    EventHelper.onevent(document.body, 'mouseover', true, e => {
       events.push(e);
     });
 
-    Events.onevent(document.body, 'mouseout', true, end => {
+    EventHelper.onevent(document.body, 'mouseout', true, end => {
       let i;
       let start;
 
@@ -112,14 +115,14 @@ Events.onengage = ((() => {
   };
 }))();
 
-Events.onhashchange = ((() => {
+EventHelper.onhashchange = ((() => {
   const handler = new Handler();
   let lastHash = document.location.hash;
 
   const dispatch = e => {
     const newHash = document.location.hash;
 
-    if (lastHash != newHash) {
+    if (lastHash !== newHash) {
       lastHash = newHash;
 
       e.hash = newHash;
@@ -129,7 +132,7 @@ Events.onhashchange = ((() => {
   };
 
   if (window.onhashchange) {
-    Events.onevent(window, 'hashchange', false, dispatch);
+    EventHelper.onevent(window, 'hashchange', false, dispatch);
   } else {
     setInterval(() => { dispatch({}); }, 25);
   }
@@ -139,7 +142,7 @@ Events.onhashchange = ((() => {
   };
 }))();
 
-Events.onerror = ((() => {
+EventHelper.onerror = ((() => {
   const handler = new Handler();
 
   if (typeof window.onerror === 'function') handler.push(window.onerror);
@@ -151,21 +154,21 @@ Events.onerror = ((() => {
   };
 }))();
 
-Events.onsubmit = ((() => {
+EventHelper.onsubmit = ((() => {
   const handler = new Handler();
 
-  const handle = Util.undup(e => {
+  const handle = MiscUtil.undup(e => {
     handler.dispatch(e);
   });
 
-  Events.onready(() => {
-    Events.onevent(document.body, 'submit', true, e => {
+  EventHelper.onready(() => {
+    EventHelper.onevent(document.body, 'submit', true, e => {
       handle(e);
     });
 
     // Intercept enter keypresses which will submit the form in most browsers.
-    Events.onevent(document.body, 'keypress', false, e => {
-      if (e.keyCode == 13) {
+    EventHelper.onevent(document.body, 'keypress', false, e => {
+      if (e.keyCode === 13) {
         const target = e.target;
         const form = target.form;
 
@@ -177,7 +180,7 @@ Events.onsubmit = ((() => {
     });
 
     // Intercept clicks on any buttons:
-    Events.onevent(document.body, 'click', false, e => {
+    EventHelper.onevent(document.body, 'click', false, e => {
       const target = e.target;
       const targetType = (target.type || '').toLowerCase();
 
@@ -193,4 +196,4 @@ Events.onsubmit = ((() => {
   };
 }))();
 
-export default Events;
+export default EventHelper;

@@ -1,9 +1,9 @@
-import Util from 'utils';
+import MiscUtil from 'miscUtil';
 import DomUtil from 'domUtil';
 import ArrayUtil from 'arrayUtil';
 import Env from 'env';
 import Geo from 'geo';
-import Events from 'events';
+import EventHelper from 'eventHelper';
 // import BrowserDetect from 'browserDetect';
 
 /**
@@ -17,6 +17,7 @@ import Events from 'events';
  */
 export default class Scribe {
   constructor(options, context) {
+    if (!(this instanceof Scribe)) return new Scribe(options, context);
     options = options || {};
     context = context || {};
 
@@ -42,7 +43,7 @@ export default class Scribe {
   initialize() {
     const self = this;
 
-    this.options = Util.merge({
+    this.options = MiscUtil.merge({
       bucket: 'none',
       breakoutUsers: false,
       breakoutVisitors: false,
@@ -58,24 +59,15 @@ export default class Scribe {
       clickElementSelectors: ['a']
     }, this.options);
 
+    this.context = MiscUtil.merge({
+      session_id: Env.getSessionId(),
+      visitor_id: Env.getVisitorId()
+    }, this.context);
+
     // Always assume that Javascript is the culprit of leaving the page
     // (we'll detect and intercept clicks on links and buttons as best
     // as possible and override this assumption in these cases):
     this.javascriptRedirect = true;
-
-    this.context = {};
-
-    this.context.fingerprint = Env.getFingerprint();
-
-    this.context.session_id = ((() => {
-      const session_id = Util.store.session.getItem('scribe_sid') || Util.genGuid();
-
-      Util.store.session.setItem('scribe_sid', session_id);
-
-      return session_id;
-    }))();
-
-    // this.context.visitor_id = ((() => window.Util.visitor_id()))();
 
     self.oldHash = document.location.hash;
 
@@ -86,14 +78,14 @@ export default class Scribe {
         // If it's a real node, get it so we can capture node data:
         const targetNode = document.getElementById(id);
 
-        const data = Util.merge({
-          url: Util.parseUrl(document.location)
+        const data = MiscUtil.merge({
+          url: MiscUtil.parseUrl(document.location)
         }, targetNode ? DomUtil.getNodeDescriptor(targetNode) : {id});
 
         self.track('jump', {
           target: data,
           source: {
-            url: Util.merge(Util.parseUrl(document.location), {
+            url: MiscUtil.merge(MiscUtil.parseUrl(document.location), {
               hash: self.oldHash // Override the hash
             })
           }
@@ -112,7 +104,7 @@ export default class Scribe {
 
     // Track page view
     if (this.options.trackPageViews) {
-      Events.onready(() => {
+      EventHelper.onready(() => {
         // Track page view, but only after the DOM has loaded:
         self.pageview();
       });
@@ -120,9 +112,9 @@ export default class Scribe {
 
     // Track clicks
     if (this.options.trackClicks) {
-      Events.onready(() => {
+      EventHelper.onready(() => {
         // Track all clicks to the document:
-        Events.onevent(document.body, 'click', true, e => {
+        EventHelper.onevent(document.body, 'click', true, e => {
           const ancestors = DomUtil.getAncestors(e.target);
 
           // Do not track clicks on links, these are tracked separately!
@@ -137,14 +129,14 @@ export default class Scribe {
 
     // Track hash changes:
     if (this.options.trackHashChanges) {
-      Events.onhashchange(e => {
+      EventHelper.onhashchange(e => {
         trackJump(e.hash);
       });
     }
 
     // Track all engagement:
     if (this.options.trackEngagement) {
-      Events.onengage((start, end) => {
+      EventHelper.onengage((start, end) => {
         self.track('engage', {
           target: DomUtil.getNodeDescriptor(start.target),
           duration: end.timeStamp - start.timeStamp
@@ -155,7 +147,7 @@ export default class Scribe {
     // Track all clicks on links:
     if (this.options.trackElementClicks) {
       DomUtil.monitorElements(this.options.clickElementSelectors, el => {
-        Events.onevent(el, 'click', true, e => {
+        EventHelper.onevent(el, 'click', true, e => {
           // return if this click it created with createEvent and not by a real click
           // Neat but doesn't work in IE, Safari
           // if(!e.isTrusted) return;
@@ -167,10 +159,10 @@ export default class Scribe {
           self.javascriptRedirect = false;
           setTimeout(() => {self.javascriptRedirect = true;}, 500);
 
-          const parsedUrl = Util.parseUrl(el.href);
-          const value = {target: Util.merge({url: parsedUrl}, DomUtil.getNodeDescriptor(el))};
+          const parsedUrl = MiscUtil.parseUrl(el.href);
+          const value = {target: MiscUtil.merge({url: parsedUrl}, DomUtil.getNodeDescriptor(el))};
 
-          if (Util.isSamePage(parsedUrl, document.location.href)) {
+          if (MiscUtil.isSamePage(parsedUrl, document.location.href)) {
             // User is jumping around the same page. Track here in case the
             // client prevents the default action and the hash doesn't change
             // (otherwise it would be tracked by onhashchange):
@@ -205,7 +197,7 @@ export default class Scribe {
 
     // Track JavaScript-based redirects, which can occur without warning:
     if (this.options.trackRedirects) {
-      Events.onexit(e => {
+      EventHelper.onexit(e => {
         if (self.javascriptRedirect) {
           self.trackLater('redirect');
         }
@@ -214,14 +206,14 @@ export default class Scribe {
 
     // Track form submissions:
     if (this.options.trackSubmissions) {
-      Events.onsubmit(e => {
+      EventHelper.onsubmit(e => {
         if (e.form) {
           if (!e.form.formId) {
-            e.form.formId = Util.genGuid();
+            e.form.formId = MiscUtil.genGuid();
           }
 
           self.trackLater('formsubmit', {
-            form: Util.merge({formId: e.form.formId}, DomUtil.getFormData(e.form))
+            form: MiscUtil.merge({formId: e.form.formId}, DomUtil.getFormData(e.form))
           });
         }
       });
@@ -234,11 +226,11 @@ export default class Scribe {
   }
 
   _saveOutbox() {
-    Util.store.local.setItem('scribe_outbox', JSON.stringify(this.outbox));
+    MiscUtil.store.local.setItem('scribe_outbox', JSON.stringify(this.outbox));
   }
 
   _loadOutbox() {
-    this.outbox = JSON.parse(Util.store.local.getItem('scribe_outbox') || '[]');
+    this.outbox = JSON.parse(MiscUtil.store.local.getItem('scribe_outbox') || '[]');
   }
 
   _sendOutbox() {
@@ -250,7 +242,7 @@ export default class Scribe {
       // Specially modify redirect, formSubmit events to save the new URL,
       // because the URL is not known at the time of the event:
       if (ArrayUtil.contains(['browser:redirect', 'browser:formSubmit'], event_type)) {
-        message.value.target = Util.jsonify(Util.merge(message.value.target || {}, {url: Util.parseUrl(document.location)}));
+        message.value.target = MiscUtil.jsonify(MiscUtil.merge(message.value.target || {}, {url: MiscUtil.parseUrl(document.location)}));
       }
 
       // If source and target urls are the same, change redirect events
@@ -258,8 +250,8 @@ export default class Scribe {
       if (event_type === 'browser:redirect') {
         try {
           // See if it's a redirect (= different url) or reload (= same url):
-          const sourceUrl = Util.unparseUrl(message.value.source.url);
-          const targetUrl = Util.unparseUrl(message.value.target.url);
+          const sourceUrl = MiscUtil.unparseUrl(message.value.source.url);
+          const targetUrl = MiscUtil.unparseUrl(message.value.target.url);
 
           if (sourceUrl === targetUrl) {
             // It's a reload:
@@ -293,10 +285,8 @@ export default class Scribe {
   _createEvent(name, props = {}) {
     props.timestamp = props.timestamp || (new Date()).toISOString();
     props.type = `browser:${name}`;
-    props.source = Util.merge(Env.getPageloadData(), props.source || {});
-    // Todo: Should be broken out
-    props.mm = Env.getMMData();
-    return Util.jsonify(Util.merge(this.context, props));
+    props.source = MiscUtil.merge(Env.getPageloadData(), props.source || {});
+    return MiscUtil.jsonify(MiscUtil.merge(this.context, props));
   }
 
   /**

@@ -1,2 +1,3 @@
 import Scribe from 'scribe';
-export { Scribe };
+import ConsoleTracker from 'tracker/consoleTracker';
+export { Scribe, ConsoleTracker};

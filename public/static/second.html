@@ -24,6 +24,8 @@
   <a id="laddaom" href="./second.html">Ladda om</a>
 </div>
 
+<button onclick="track();">Track custom</button>
+
 <script language="JavaScript">
   var scribe =  new Scribe.Scribe({
     tracker: new Scribe.ConsoleTracker(),
@@ -37,6 +39,10 @@
     article_id: 'second-page',
     content_keywords: 'allmant sport',
   });
+
+  var track = function() {
+    scribe.track("customEvent", {content_keywords: 'should overwrite initialized'});
+  }
 </script>
 </body>
 </html>

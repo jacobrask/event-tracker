@@ -2,7 +2,6 @@ import MiscUtil from 'miscUtil';
 import DomUtil from 'domUtil';
 import ArrayUtil from 'arrayUtil';
 import Env from 'env';
-import Geo from 'geo';
 import EventHelper from 'eventHelper';
 // import BrowserDetect from 'browserDetect';
 
@@ -44,11 +43,7 @@ export default class Scribe {
     const self = this;
 
     this.options = MiscUtil.merge({
-      bucket: 'none',
-      breakoutUsers: false,
-      breakoutVisitors: false,
       waitOnTracker: false,
-      resolveGeo: false,
       trackPageViews: false,
       trackClicks: false,
       trackHashChanges: false,
@@ -94,13 +89,6 @@ export default class Scribe {
         self.oldHash = hash;
       }
     };
-
-    // Try to obtain geo location if possible:
-    if (this.options.resolveGeo) {
-      Geo.geoip(position => {
-        self.context.geo = position;
-      });
-    }
 
     // Track page view
     if (this.options.trackPageViews) {

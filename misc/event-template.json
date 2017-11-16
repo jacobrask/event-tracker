@@ -1,0 +1,305 @@
+{
+  // new root field ids
+  // for client_id, payway_id, user_service_id etc...
+  "ids":{
+    /*
+    After future discussion it would be nice to have a
+    id on anon users that would be the same on different
+    domains and possibly different platforms. We have found
+    that actual javascript fingerprints does not work that
+    well and would require chaining between fingerprint_id and
+    client_id because of fingerprints changing due to browser
+    upgrades for example.
+    Proposed solution would be to have a third party cookie
+    or something similar
+    "fingerprint_id": "",
+    */
+    /*
+    client_id for browsers:
+    client_id is a generated uuid that is stored in localStorage
+    there for it will be different between different domains
+    which isn't optimal.
+    client_id for mobile apps:
+    client_id would be the device id which is different for
+    different apps on the same device and which is also
+    subject to change if all apps from the same publisher
+    are deleted (at least iphone). Reinstalling a app then will
+    give a new device id. TODO: CONFIRM
+    */
+    "client_id": "c3c9058c-8548-33d6-5428-e7b054136852",
+    /*
+    payway_id is the payway id, this id stay the same across
+    sites and mobile apps though only set for logged in users
+    */
+    "payway_id": "59d1d331996e590006001978",
+    /*
+    user_id is the primary user id, probably the same a another
+    of the ids in this object.
+    */
+    "user_id": "59d1d331996e590006001978",
+    /*
+    user_service_id is Mittmedia specific and optional
+    */
+    "user_service_id": "1"
+  },
+
+
+  /* DELETE
+  // should be the same as comescoreid
+  // name deviceid? deviceid for phones
+  // generated value for browsers
+  // -> client_id instead of visitor_id, fingerprint and comscore_id
+  // tracker id another work shop
+  "visitor_id": "c3c9058c-8548-33d6-5428-e7b054136852",
+  */
+
+  /* DISCUSSION
+  // keep?
+  // how should it be set?
+  // better implementation, same for all tabs
+  // expire?
+  // generate new if expired
+  // in the ids field?
+  current in browser:
+  session_id is a generated uuid that is stored in the sessionStorage,
+  this means that it's different between tabs and is cleared when the
+  tab or window is closed.
+  current in app:
+  not implemented but planned to be generated on app start and app resume.
+
+  There has been discussions about introducing timers and reset session_id
+  after a defined period of inactivity.
+  */
+  "session_id": "3346c39a-7afe-fa42-9ed6-ae343ec3a1be",
+
+  /*
+  server_timestamp is the time at which the event reached the backend.
+  This can be used of the client_timestamp is invalid or suspicious.
+  */
+  "server_timestamp": "2017-10-04T10:01:39.646Z",
+
+  /*
+  client_timestamp is the time of the event according to the client.
+  There are a few outliers here, like events that occur in the future
+  or around 1970.
+  */
+  "client_timestamp": "2017-10-04T10:01:38.313Z",
+
+  /*
+  DISCUSION, should we make the best estimate and have a single ip in remote_ip
+  and have x-forwarded-for as an array of ips?
+
+  remote_ip is added by the server, using x-forwarded-for alternatively
+  remote_ip if there isn't any x-forwarded-for
+  */
+  "remote_ip": "95.195.195.105, 162.158.182.67",
+
+  /*
+  event_type is set by the client, browser:<event>, app:<event>.
+  Should preferably say something about the data structure of the event,
+  ie. a browser:pageview won't have a target attribute while browser:click
+  will.
+  Something that should be considered when making custom events, having
+  something like browser:clickPurchaseButton1 and browser:clickPurchaseButton2
+  should probably be browser:click or maybe browser:clickPurchase and then
+  the specific button or link in another attribute like target or some custom
+  attribute in the event_type_data object
+  */
+  "event_type": "browser:pageview",
+
+  /* DISCUSSION
+  // event_type_ property or attribute
+  // custom attribute for event
+  // name suggestion event_type_attribute
+  other suggestions are event_type_data or event_type_custom_data and dropping
+  the root data object.
+  */
+  "event_type_attribute": {},
+
+  /*
+  client generated UUID generated at the time of the event to be able to
+  remove duplicates in selections of events.
+  Duplicates of events could be created if we for example would do a best
+  effort to send a click event when a user clicks a like to another domain,
+  in that case we store the event in localStorage and might try to send the
+  event to the backend but not get the response from the backend in time to
+  remove the event from the localStorage before the page unloads. That event
+  would then be sent to the backend a second time when the user comes back
+  to our domain and we send all events stored in the localStorage outbox.
+  Also if we double import events or similar.
+  */
+  "event_id": "c3c9058c-8548-33d6-5428-e7b054136852",
+
+  /* DISCUSSION
+  // should be renamed
+  // moved to root level, we need 3 levels
+  // organization_id MittMedia, VK, 24
+  // domain_id???
+  // product_id app or site se.mittmedia.blackcap, se.mittmedia.sparrow, se.mittmedia.kundservice
+  // channel_id?? product_context_id?? ST
+  old
+  "mm": {
+    "site_id": "ST",
+    "payway_id": "59d1d331996e590006001978",
+    // move to root level or to context_level
+    "content_keywords": [
+      "st.nu",
+      "ettan",
+      "section"
+    ],
+
+    // remove
+    "comscore_id": "14b34de4c7cbb270968c4e3695b9fcd4fb700fd7",
+    //
+    "article_id": null
+  },
+
+  Proposed
+  */
+  "context": {
+    "organization_id": "mittmedia",
+    "product_id": "se.mittmedia.site.dt",
+    // DISCUSSION, is this a good idea? Should this be in the "data" field instead?
+    "application": {
+      // site http status code
+      "status_code": 200,
+      // Naming, remove?
+      // move to content block
+      "section": null,
+      "controller": "start",
+      "action": "index"
+    }
+  },
+  "content": {
+    // content_state is the state that the current content had when the event occurred
+    "content_state": "open|locked|soft_locked|soft_open|paywalled|...",
+    // article_id is the article id
+    "article_id": "xyz",
+    /*
+    DISCUSSION
+    Should we add tags, categories, media and perhaps others to their own attributes?
+    content_keywords is a array of content_keywords, article, has_video, section, tags, categories etc.
+    */
+    "content_keywords": [
+      "st.nu",
+      "ettan",
+      "section"
+    ]
+
+  },
+  // DISCUSSION, should we have this root attribute and is there anything else we should add?
+  "user": {
+    /*
+    DISCUSSION
+    Is this enough or do we need more attributes to encompass logged in and subscription state?
+    user_state is the state that the user had when the event occurred
+    */
+    "user_state": "anon|logged_in|premium|plus|gold|.."
+  },
+
+  /*
+  source is data extracted from the client.
+  */
+  "source": {
+    "url": {
+      "protocol": "http:",
+      "pathname": "/",
+      "hostname": "www.st.nu",
+      "host": "www.st.nu"
+    },
+    "referrer": {
+      "host": "www.google.se",
+      "hostname": "www.google.se",
+      "pathname": "/",
+      "protocol": "https:"
+    },
+    "screen": {
+      "width": 1440,
+      "height": 900,
+      "color_depth": 24
+    },
+    "locale": {
+      "timezone_offset": -120,
+      "language": "sv-SE"
+    },
+    "document": {
+      "title": "st.nu"
+    },
+    // optional for app events
+    "browser": {
+      "version": 11,
+      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Safari/604.1.38",
+      "plugins": null,
+      "platform": "Mac",
+      "name": "Safari",
+      "language": "sv-SE"
+    }
+  },
+
+  /*
+  DISCUSSION
+  We need some field where we can dump custom data that the event_service only validate
+  that it is correct json for ad hoc experiments
+  // NPS stuff?
+  // put json here
+  // or other custom string
+  Should we remove this and have it in event_type_data or event_type_custom_data
+  */
+  "data": {},
+
+  /*
+  copied from a browser click event on this element:
+  <a class="navigation-action" data-pelican="{"type":"clickOnce", "name":"Clicked on level 2 nav item","properties":{"name":"TV"}}" href="/tv" scribe_scanned="true" target="_self">TV</a>
+  */
+  "target": {
+    "url": {
+      "host": "www.st.nu",
+      "hostname": "www.st.nu",
+      "pathname": "/tv",
+      "protocol": "http:"
+    },
+    "selector": "header:nth-child(4)>div.big:nth-child(1)>div.topmenu-strip.consumer_signed_in:nth-child(1)>div.topmenu-navbar:nth-child(3)>div.topmenu-navbar-level-two:nth-child(2)>div.topmenu-navbar-inner.row:nth-child(1)>nav#topmenu-navbar-level-two-navigation-big.topmenu-navbar-level-navigation.at-right.at-left:nth-child(1)>ul.topmenu-navigation-list:nth-child(1)>li.navigation-item:nth-child(2)>a.navigation-action:nth-child(1)",
+    "data": {
+      "pelican": {
+        "type": "clickOnce",
+        "name": "Clicked on level 2 nav item",
+        "properties": {
+          "name": "TV"
+        }
+      }
+    }
+  },
+
+  // added by the server
+  // only take the ones we want
+  "headers": {
+    "x-forwarded-for": "95.195.195.105, 162.158.182.67",
+
+    /* Probably doesn't have any value
+    "referer": "http://www.st.nu/",
+    "origin": "http://www.st.nu",
+    "host": "ues.mmcloud.se",
+    */
+    /* Probably no value*/
+    //"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Safari/604.1.38",
+
+    /* No value */
+    //"x-request-start": "1507111299641",
+    //"x-request-id": "6f04aba5-5d90-4728-8106-cdba3946dc3d",
+    //"x-forwarded-proto": "http",
+    //"x-forwarded-port": "80",
+    //"via": "1.1 vegur",
+    //"total-route-time": "0",
+    //"content-type": "application/json",
+    //"content-length": "943",
+    //"connection": "close",
+    //"connect-time": "0",
+    //"cf-visitor": "{\"scheme\":\"https\"}",
+    //"cf-ray": "3a874d1698cc8709-ARN",
+    //"cf-ipcountry": "SE",
+    //"cf-connecting-ip": "95.195.195.105",
+    //"accept-language": "sv-se",
+    //"accept-encoding": "gzip",
+    //"accept": "application/json"
+  }
+}

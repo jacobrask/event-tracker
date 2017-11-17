@@ -44,22 +44,7 @@
   },
 
 
-  /* DELETE
-  // should be the same as comescoreid
-  // name deviceid? deviceid for phones
-  // generated value for browsers
-  // -> client_id instead of visitor_id, fingerprint and comscore_id
-  // tracker id another work shop
-  "visitor_id": "c3c9058c-8548-33d6-5428-e7b054136852",
-  */
-
-  /* DISCUSSION
-  // keep?
-  // how should it be set?
-  // better implementation, same for all tabs
-  // expire?
-  // generate new if expired
-  // in the ids field?
+  /*
   current in browser:
   session_id is a generated uuid that is stored in the sessionStorage,
   this means that it's different between tabs and is cleared when the
@@ -68,7 +53,8 @@
   not implemented but planned to be generated on app start and app resume.
 
   There has been discussions about introducing timers and reset session_id
-  after a defined period of inactivity.
+  after a defined period of inactivity. COuld also be solved with cookies with
+  TTL.
   */
   "session_id": "3346c39a-7afe-fa42-9ed6-ae343ec3a1be",
 
@@ -86,9 +72,6 @@
   "client_timestamp": "2017-10-04T10:01:38.313Z",
 
   /*
-  DISCUSION, should we make the best estimate and have a single ip in remote_ip
-  and have x-forwarded-for as an array of ips?
-
   remote_ip is added by the server, using x-forwarded-for alternatively
   remote_ip if there isn't any x-forwarded-for
   */
@@ -107,14 +90,15 @@
   */
   "event_type": "browser:pageview",
 
-  /* DISCUSSION
-  // event_type_ property or attribute
-  // custom attribute for event
-  // name suggestion event_type_attribute
-  other suggestions are event_type_data or event_type_custom_data and dropping
+  /* version */
+  "event_type_version": "1",
+
+  /*
+  other suggestions are event_type_data or event_type_custom_data, event_custom_data and dropping
   the root data object.
+  Only validated by valid json and length(?)
   */
-  "event_type_attribute": {},
+  "event_custom_data": {},
 
   /*
   client generated UUID generated at the time of the event to be able to
@@ -130,82 +114,65 @@
   */
   "event_id": "c3c9058c-8548-33d6-5428-e7b054136852",
 
-  /* DISCUSSION
-  // should be renamed
-  // moved to root level, we need 3 levels
-  // organization_id MittMedia, VK, 24
-  // domain_id???
-  // product_id app or site se.mittmedia.blackcap, se.mittmedia.sparrow, se.mittmedia.kundservice
-  // channel_id?? product_context_id?? ST
-  old
-  "mm": {
-    "site_id": "ST",
-    "payway_id": "59d1d331996e590006001978",
-    // move to root level or to context_level
-    "content_keywords": [
-      "st.nu",
-      "ettan",
-      "section"
-    ],
+  /* version of event_service added by event_service */
+  "event_service_version":"1",
 
-    // remove
-    "comscore_id": "14b34de4c7cbb270968c4e3695b9fcd4fb700fd7",
-    //
-    "article_id": null
-  },
-
-  Proposed
+  /*
+  context is the event context surrounding the event
   */
   "context": {
     "organization_id": "mittmedia",
     "product_id": "se.mittmedia.site.dt",
-    // DISCUSSION, is this a good idea? Should this be in the "data" field instead?
+    // Optional
     "application": {
       // site http status code
       "status_code": 200,
-      // Naming, remove?
-      // move to content block
-      "section": null,
       "controller": "start",
       "action": "index"
     }
   },
   "content": {
     // content_state is the state that the current content had when the event occurred
-    "content_state": "open|locked|soft_locked|soft_open|paywalled|...",
+    "state": "open|locked|soft_locked|soft_open|paywalled|...",
     // article_id is the article id
     "article_id": "xyz",
+    "section": null,
     /*
-    DISCUSSION
-    Should we add tags, categories, media and perhaps others to their own attributes?
     content_keywords is a array of content_keywords, article, has_video, section, tags, categories etc.
     */
-    "content_keywords": [
+    "keywords": [
       "st.nu",
       "ettan",
       "section"
     ]
-
   },
-  // DISCUSSION, should we have this root attribute and is there anything else we should add?
   "user": {
     /*
-    DISCUSSION
     Is this enough or do we need more attributes to encompass logged in and subscription state?
     user_state is the state that the user had when the event occurred
     */
-    "user_state": "anon|logged_in|premium|plus|gold|.."
+    "state": "anon|logged_in|premium|plus|gold|..",
+    "products": ["xyz", "abc"],
+    "position": {"lon": 1, "lat": 2},
+    "location": "Stockholm"
+    // "functions": ["comment"],
+    // "subscription": ["email"]
   },
 
   /*
   source is data extracted from the client.
   */
   "source": {
+    // url object from http://www.st.nu/tv?lol=lol#GG
     "url": {
-      "protocol": "http:",
-      "pathname": "/",
+      "hash": "#GG",
+      "host": "www.st.nu",
       "hostname": "www.st.nu",
-      "host": "www.st.nu"
+      "pathname": "/tv",
+      "protocol": "http:",
+      "query": {
+        "lol": "lol"
+      }
     },
     "referrer": {
       "host": "www.google.se",
@@ -237,19 +204,9 @@
   },
 
   /*
-  DISCUSSION
-  We need some field where we can dump custom data that the event_service only validate
-  that it is correct json for ad hoc experiments
-  // NPS stuff?
-  // put json here
-  // or other custom string
-  Should we remove this and have it in event_type_data or event_type_custom_data
-  */
-  "data": {},
-
-  /*
   copied from a browser click event on this element:
   <a class="navigation-action" data-pelican="{"type":"clickOnce", "name":"Clicked on level 2 nav item","properties":{"name":"TV"}}" href="/tv" scribe_scanned="true" target="_self">TV</a>
+  target.data is not validated and stored as a string
   */
   "target": {
     "url": {
@@ -270,20 +227,14 @@
     }
   },
 
-  // added by the server
-  // only take the ones we want
   "headers": {
     "x-forwarded-for": "95.195.195.105, 162.158.182.67",
 
-    /* Probably doesn't have any value
-    "referer": "http://www.st.nu/",
-    "origin": "http://www.st.nu",
-    "host": "ues.mmcloud.se",
-    */
-    /* Probably no value*/
-    //"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Safari/604.1.38",
-
     /* No value */
+    //"referer": "http://www.st.nu/",
+    //"origin": "http://www.st.nu",
+    //"host": "ues.mmcloud.se",
+    //"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Safari/604.1.38",
     //"x-request-start": "1507111299641",
     //"x-request-id": "6f04aba5-5d90-4728-8106-cdba3946dc3d",
     //"x-forwarded-proto": "http",

@@ -2,7 +2,7 @@
   "name": "event-tracker",
   "version": "0.0.1",
   "description": "Event tracking lib",
-  "main": "lib/library.js",
+  "main": "lib/Scribe.js",
   "scripts": {
     "build": "webpack --env build",
     "dev": "webpack --progress --colors --watch --env dev",

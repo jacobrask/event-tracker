@@ -6,7 +6,7 @@ const EventHelper = {};
 
 EventHelper.onready = f => {
   if (document.body != null) f();
-  else setTimeout(() => {EventHelper.onready(f);}, 10);
+  else setTimeout(() => { EventHelper.onready(f); }, 10);
 };
 
 EventHelper.onevent = (el, type, capture, f_) => {

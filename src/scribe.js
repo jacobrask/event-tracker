@@ -60,7 +60,7 @@ export default class Scribe {
     this.rootEvent =
     merge({
       sessionId: Env.getSessionId(),
-      clientId: Env.getVisitorId()
+      clientId: Env.getClientId()
     }, this.rootEvent);
 
     // Always assume that Javascript is the culprit of leaving the page

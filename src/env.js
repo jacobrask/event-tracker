@@ -99,11 +99,11 @@ Env.getSessionId = () => {
   return session_id;
 };
 
-Env.getVisitorId = () => {
-  const visitor_id = MiscUtil.store.local.getItem('scribe_vid') || MiscUtil.genGuid();
+Env.getClientId = () => {
+  const client_id = MiscUtil.store.local.getItem('scribe_cid') || MiscUtil.genGuid();
 
-  MiscUtil.store.local.setItem('scribe_vid', visitor_id);
-  return visitor_id;
+  MiscUtil.store.local.setItem('scribe_cid', client_id);
+  return client_id;
 };
 
 export default Env;

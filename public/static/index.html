@@ -9,7 +9,7 @@
 
   <!--<link rel="stylesheet" href="css/styles.css?v=1.0">-->
   <script src="../../lib/Scribe.js"></script>
-
+  <script src="main.js"></script>
 
 </head>
 
@@ -27,50 +27,8 @@
 <button onclick="track();">Track custom</button>
 
 <script language="JavaScript">
-  var scribe =  new Scribe.Scribe({
-    tracker: new Scribe.ConsoleTracker({"url": "http://localhost:8080/api/v1/events"}),
-    trackClicks: false,
-    trackHashChanges: true,
-    trackElementClicks: true,
-    trackPageViews: true,
-    waitOnTracker: false
-  }, {
-    "organizationId": "test-organization",
-    "productId": "se.test.product",
-    // Optional
-    "application": {
-      // site http status code
-      "statusCode": 200,
-      "controller": "start",
-      "action": "index"
-    }
-  },
-  {
-    "paywayId": "59d1d331996e590006001978",
-    "userId": "59d1d331996e590006001978",
-    "state": "logged_in",
-    "products": [
-      "test-product"
-    ],
-    "position": {
-      "lon": 1,
-      "lat": 2
-    },
-    "location": "Stockholm"
-  },
-  {
-    "state": "open",
-    "articleId": "1234",
-    "section": null,
-    "keywords": [
-      "test-product",
-      "index"
-    ]
-  }
-);
-
-  var track = function() {
-    scribe.track("customEvent", {content_keywords: 'should overwrite initialized'});
+  function track() {
+    scribe.track('customEvent', { content: { keywords: 'should overwrite initialized' } });
   }
 </script>
 </body>

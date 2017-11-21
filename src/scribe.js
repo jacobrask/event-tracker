@@ -85,7 +85,9 @@ export default class Scribe {
         }, targetNode ? DomUtil.getNodeDescriptor(targetNode) : { id });
 
         self.track('jump', {
-          target: data,
+          eventCustomData: {
+            target: data
+          },
           source: {
             url: MiscUtil.merge(MiscUtil.parseUrl(document.location), {
               hash: self.oldHash // Override the hash
@@ -115,7 +117,9 @@ export default class Scribe {
           // Do not track clicks on links, these are tracked separately!
           if (!ArrayUtil.exists(ancestors, e => e.tagName === 'A')) {
             self.track('click', {
-              target: DomUtil.getNodeDescriptor(e.target)
+              eventCustomData: {
+                target: DomUtil.getNodeDescriptor(e.target)
+              }
             });
           }
         });
@@ -214,7 +218,7 @@ export default class Scribe {
           }
 
           self.trackLater('formsubmit', {
-            form: MiscUtil.merge({ formId: e.form.formId }, DomUtil.getFormData(e.form))
+            eventCustomData: { form: MiscUtil.merge({ formId: e.form.formId }, DomUtil.getFormData(e.form)) }
           });
         }
       });
@@ -243,7 +247,8 @@ export default class Scribe {
       // Specially modify redirect, formSubmit events to save the new URL,
       // because the URL is not known at the time of the event:
       if (ArrayUtil.contains(['browser:redirect', 'browser:formSubmit'], event_type)) {
-        message.value.target = MiscUtil.jsonify(MiscUtil.merge(message.value.target || {}, { url: MiscUtil.parseUrl(document.location) }));
+        message.value.eventCustomData = message.value.eventCustomData || {};
+        message.value.eventCustomData.target = MiscUtil.jsonify(MiscUtil.merge(message.value.eventCustomData.target || {}, { url: MiscUtil.parseUrl(document.location) }));
       }
 
       // If source and target urls are the same, change redirect events
@@ -252,7 +257,7 @@ export default class Scribe {
         try {
           // See if it's a redirect (= different url) or reload (= same url):
           const sourceUrl = MiscUtil.unparseUrl(message.value.source.url);
-          const targetUrl = MiscUtil.unparseUrl(message.value.target.url);
+          const targetUrl = MiscUtil.unparseUrl(message.value.eventCustomData.target.url);
 
           if (sourceUrl === targetUrl) {
             // It's a reload:

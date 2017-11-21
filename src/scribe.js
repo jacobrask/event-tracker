@@ -289,7 +289,7 @@ export default class Scribe {
     props.eventId = MiscUtil.genGuid();
     props.eventTypeVersion = EVENT_TYPE_VERSION;
     props.clientTimestamp = props.clientTimestamp || (new Date()).toISOString();
-    props.type = `browser:${name}`;
+    props.eventType = `browser:${name}`;
     props.source = MiscUtil.merge(Env.getPageloadData(), props.source || {});
     const rootEvent = MiscUtil.merge({
       context: this.context,

@@ -2815,7 +2815,7 @@ var Scribe = function () {
 
       this.rootEvent = (0, _lodash2.default)({
         sessionId: _env2.default.getSessionId(),
-        clientId: _env2.default.getVisitorId()
+        clientId: _env2.default.getClientId()
       }, this.rootEvent);
 
       // Always assume that Javascript is the culprit of leaving the page
@@ -5336,7 +5336,7 @@ Env.getScreenData = function () {
   return {
     height: screen.height,
     width: screen.width,
-    color_depth: screen.colorDepth
+    colorDepth: screen.colorDepth
   };
 };
 
@@ -5420,32 +5420,12 @@ Env.getSessionId = function () {
   return session_id;
 };
 
-Env.getVisitorId = function () {
-  var visitor_id = _miscUtil2.default.store.local.getItem('scribe_vid') || _miscUtil2.default.genGuid();
+Env.getClientId = function () {
+  var client_id = _miscUtil2.default.store.local.getItem('scribe_cid') || _miscUtil2.default.genGuid();
 
-  _miscUtil2.default.store.local.setItem('scribe_vid', visitor_id);
-  return visitor_id;
+  _miscUtil2.default.store.local.setItem('scribe_cid', client_id);
+  return client_id;
 };
-
-/*
-// Todo: Should be broken out
-Env.getMMData = () => ({
-  site_id: window.SiteObject.site_id,
-  payway_id: window.user.payway_id,
-  comscore_id: window.MiscUtil.get_cookie('m_visitor'),
-  article_id: window.PageObject && window.PageObject.article_id || null,
-  content_keywords: window.content_keywords,
-  consumer_location: window.MiscUtil.get_cookie('consumer_location')
-});
-
-// Todo: Should be broken out
-Env.getSparrowData = () => ({
-  status_code: window.SiteObject.status_code,
-  section: window.SiteObject.section,
-  controller: window.SiteObject.controller_name,
-  action: window.SiteObject.action_name
-});
-*/
 
 exports.default = Env;
 module.exports = exports['default'];

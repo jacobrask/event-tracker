@@ -5,6 +5,7 @@ import Env from 'env';
 import EventHelper from 'eventHelper';
 // import BrowserDetect from 'browserDetect';
 
+const EVENT_TYPE_VERSION = 1;
 /**
  * Constructs a new Scribe Analytics tracker.
  *
@@ -14,6 +15,7 @@ import EventHelper from 'eventHelper';
  *                          Must be: function(collection, event).
  *
  */
+
 export default class Scribe {
   constructor(options = {}, context = {}, user = {}, content = {}) {
     if (!(this instanceof Scribe)) return new Scribe(options, context);
@@ -131,8 +133,10 @@ export default class Scribe {
     if (this.options.trackEngagement) {
       EventHelper.onengage((start, end) => {
         self.track('engage', {
-          target: DomUtil.getNodeDescriptor(start.target),
-          duration: end.timeStamp - start.timeStamp
+          eventCustomData: {
+            target: DomUtil.getNodeDescriptor(start.target),
+            duration: end.timeStamp - start.timeStamp
+          }
         });
       });
     }
@@ -153,7 +157,11 @@ export default class Scribe {
           setTimeout(() => { self.javascriptRedirect = true; }, 500);
 
           const parsedUrl = MiscUtil.parseUrl(el.href);
-          const value = { target: MiscUtil.merge({ url: parsedUrl }, DomUtil.getNodeDescriptor(el)) };
+          const value = {
+            eventCustomData: {
+              target: MiscUtil.merge({ url: parsedUrl }, DomUtil.getNodeDescriptor(el))
+            }
+          };
 
           if (MiscUtil.isSamePage(parsedUrl, document.location.href)) {
             // User is jumping around the same page. Track here in case the
@@ -276,7 +284,9 @@ export default class Scribe {
    * JSON objects that contains all event details.
    */
   _createEvent(name, props = {}) {
-    props.timestamp = props.timestamp || (new Date()).toISOString();
+    props.eventId = MiscUtil.genGuid();
+    props.eventTypeVersion = EVENT_TYPE_VERSION;
+    props.clientTimestamp = props.clientTimestamp || (new Date()).toISOString();
     props.type = `browser:${name}`;
     props.source = MiscUtil.merge(Env.getPageloadData(), props.source || {});
     const rootEvent = MiscUtil.merge({

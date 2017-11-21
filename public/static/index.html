@@ -35,10 +35,39 @@
     trackPageViews: true,
     waitOnTracker: false
   }, {
-    site_id: 'test-events', // current domain by default
-    article_id: 'start-page',
-    content_keywords: 'allmant sport',
-  });
+    "organizationId": "test-organization",
+    "productId": "se.test.product",
+    // Optional
+    "application": {
+      // site http status code
+      "statusCode": 200,
+      "controller": "start",
+      "action": "index"
+    }
+  },
+  {
+    "paywayId": "59d1d331996e590006001978",
+    "userId": "59d1d331996e590006001978",
+    "state": "logged_in",
+    "products": [
+      "test-product"
+    ],
+    "position": {
+      "lon": 1,
+      "lat": 2
+    },
+    "location": "Stockholm"
+  },
+  {
+    "state": "open",
+    "articleId": "1234",
+    "section": null,
+    "keywords": [
+      "test-product",
+      "index"
+    ]
+  }
+);
 
   var track = function() {
     scribe.track("customEvent", {content_keywords: 'should overwrite initialized'});

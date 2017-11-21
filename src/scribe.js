@@ -15,13 +15,14 @@ import EventHelper from 'eventHelper';
  *
  */
 export default class Scribe {
-  constructor(options, context) {
+  constructor(options = {}, context = {}, user = {}, content = {}) {
     if (!(this instanceof Scribe)) return new Scribe(options, context);
-    options = options || {};
-    context = context || {};
 
+    this.rootEvent = {};
     this.options = options;
     this.context = context;
+    this.user = user;
+    this.content = content;
     this.trackerInstance = options.tracker;
 
     this.initialize();
@@ -54,10 +55,14 @@ export default class Scribe {
       clickElementSelectors: ['a']
     }, this.options);
 
-    this.context = MiscUtil.merge({
-      session_id: Env.getSessionId(),
-      visitor_id: Env.getVisitorId()
-    }, this.context);
+    this.user = MiscUtil.merge({
+      clientId: Env.getVisitorId()
+    }, this.user);
+
+    this.rootEvent =
+    MiscUtil.merge({
+      sessionId: Env.getSessionId()
+    }, this.rootEvent);
 
     // Always assume that Javascript is the culprit of leaving the page
     // (we'll detect and intercept clicks on links and buttons as best
@@ -274,7 +279,13 @@ export default class Scribe {
     props.timestamp = props.timestamp || (new Date()).toISOString();
     props.type = `browser:${name}`;
     props.source = MiscUtil.merge(Env.getPageloadData(), props.source || {});
-    return MiscUtil.jsonify(MiscUtil.merge(this.context, props));
+    const rootEvent = MiscUtil.merge({
+      context: this.context,
+      user: this.user,
+      content: this.content
+    }, this.rootEvent);
+
+    return MiscUtil.jsonify(MiscUtil.merge(rootEvent, props));
   }
 
   /**

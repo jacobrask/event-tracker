@@ -1,47 +1,30 @@
 {
-  // new root field ids
-  // for client_id, payway_id, user_service_id etc...
-  "ids": {
-    /*
-    After future discussion it would be nice to have a
-    id on anon users that would be the same on different
-    domains and possibly different platforms. We have found
-    that actual javascript fingerprints does not work that
-    well and would require chaining between fingerprint_id and
-    client_id because of fingerprints changing due to browser
-    upgrades for example.
-    Proposed solution would be to have a third party cookie
-    or something similar
-    "fingerprint_id": "",
-    */
-    /*
-    client_id for browsers:
-    client_id is a generated uuid that is stored in localStorage
-    there for it will be different between different domains
-    which isn't optimal.
-    client_id for mobile apps:
-    client_id would be the device id which is different for
-    different apps on the same device and which is also
-    subject to change if all apps from the same publisher
-    are deleted (at least iphone). Reinstalling a app then will
-    give a new device id. TODO: CONFIRM
-    */
-    "clientId": "c3c9058c-8548-33d6-5428-e7b054136852",
-    /*
-    payway_id is the payway id, this id stay the same across
-    sites and mobile apps though only set for logged in users
-    */
-    "paywayId": "59d1d331996e590006001978",
-    /*
-    user_id is the primary user id, probably the same a another
-    of the ids in this object.
-    */
-    "userId": "59d1d331996e590006001978",
-    /*
-    user_service_id is Mittmedia specific and optional
-    */
-    "userServiceId": "1"
-  },
+  /*
+  After future discussion it would be nice to have a
+  id on anon users that would be the same on different
+  domains and possibly different platforms. We have found
+  that actual javascript fingerprints does not work that
+  well and would require chaining between fingerprint_id and
+  client_id because of fingerprints changing due to browser
+  upgrades for example.
+  Proposed solution would be to have a third party cookie
+  or something similar
+  "fingerprint_id": "",
+  */
+
+  /*
+  client_id for browsers:
+  client_id is a generated uuid that is stored in localStorage
+  there for it will be different between different domains
+  which isn't optimal.
+  client_id for mobile apps:
+  client_id would be the device id which is different for
+  different apps on the same device and which is also
+  subject to change if all apps from the same publisher
+  are deleted (at least iphone). Reinstalling a app then will
+  give a new device id. TODO: CONFIRM
+  */
+  "clientId": "c3c9058c-8548-33d6-5428-e7b054136852",
   /*
   current in browser:
   session_id is a generated uuid that is stored in the sessionStorage,
@@ -160,6 +143,16 @@
     ]
   },
   "user": {
+    /*
+    payway_id is the payway id, this id stay the same across
+    sites and mobile apps though only set for logged in users
+    */
+    "paywayId": "59d1d331996e590006001978",
+    /*
+    user_id is the primary user id, probably the same a another
+    of the ids in this object.
+    */
+    "userId": "59d1d331996e590006001978",
     /*
     Is this enough or do we need more attributes to encompass logged in and subscription state?
     user_state is the state that the user had when the event occurred

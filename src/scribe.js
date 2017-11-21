@@ -75,7 +75,7 @@ export default class Scribe {
 
         const data = MiscUtil.merge({
           url: MiscUtil.parseUrl(document.location)
-        }, targetNode ? DomUtil.getNodeDescriptor(targetNode) : {id});
+        }, targetNode ? DomUtil.getNodeDescriptor(targetNode) : { id });
 
         self.track('jump', {
           target: data,
@@ -148,7 +148,7 @@ export default class Scribe {
           setTimeout(() => {self.javascriptRedirect = true;}, 500);
 
           const parsedUrl = MiscUtil.parseUrl(el.href);
-          const value = {target: MiscUtil.merge({url: parsedUrl}, DomUtil.getNodeDescriptor(el))};
+          const value = { target: MiscUtil.merge({ url: parsedUrl }, DomUtil.getNodeDescriptor(el)) };
 
           if (MiscUtil.isSamePage(parsedUrl, document.location.href)) {
             // User is jumping around the same page. Track here in case the
@@ -201,7 +201,7 @@ export default class Scribe {
           }
 
           self.trackLater('formsubmit', {
-            form: MiscUtil.merge({formId: e.form.formId}, DomUtil.getFormData(e.form))
+            form: MiscUtil.merge({ formId: e.form.formId }, DomUtil.getFormData(e.form))
           });
         }
       });
@@ -230,7 +230,7 @@ export default class Scribe {
       // Specially modify redirect, formSubmit events to save the new URL,
       // because the URL is not known at the time of the event:
       if (ArrayUtil.contains(['browser:redirect', 'browser:formSubmit'], event_type)) {
-        message.value.target = MiscUtil.jsonify(MiscUtil.merge(message.value.target || {}, {url: MiscUtil.parseUrl(document.location)}));
+        message.value.target = MiscUtil.jsonify(MiscUtil.merge(message.value.target || {}, { url: MiscUtil.parseUrl(document.location) }));
       }
 
       // If source and target urls are the same, change redirect events
@@ -255,7 +255,7 @@ export default class Scribe {
 
     if (messages.length > 0) {
       try {
-        this.trackerInstance.tracker({value: messages});
+        this.trackerInstance.tracker({ value: messages });
       } catch (e) {
         // Don't let one bad apple spoil the batch.
         window.onerror && window.onerror(e);
@@ -310,10 +310,10 @@ export default class Scribe {
    */
   trackLater(name, props, index) {
     if (index === undefined) {
-      this.outbox.push({value: this._createEvent(name, props)});
+      this.outbox.push({ value: this._createEvent(name, props) });
       index = this.outbox.length - 1;
     } else {
-      this.outbox[index] = {value: this._createEvent(name, props)};
+      this.outbox[index] = { value: this._createEvent(name, props) };
     }
 
     this._saveOutbox();

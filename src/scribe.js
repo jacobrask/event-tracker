@@ -3,7 +3,7 @@ import DomUtil from 'domUtil';
 import ArrayUtil from 'arrayUtil';
 import Env from 'env';
 import EventHelper from 'eventHelper';
-// import BrowserDetect from 'browserDetect';
+import merge from 'lodash.merge';
 
 const EVENT_TYPE_VERSION = 1;
 /**
@@ -45,7 +45,7 @@ export default class Scribe {
   initialize() {
     const self = this;
 
-    this.options = MiscUtil.merge({
+    this.options = merge({
       waitOnTracker: false,
       trackPageViews: false,
       trackClicks: false,
@@ -58,7 +58,7 @@ export default class Scribe {
     }, this.options);
 
     this.rootEvent =
-    MiscUtil.merge({
+    merge({
       sessionId: Env.getSessionId(),
       clientId: Env.getVisitorId()
     }, this.rootEvent);
@@ -77,7 +77,7 @@ export default class Scribe {
         // If it's a real node, get it so we can capture node data:
         const targetNode = document.getElementById(id);
 
-        const data = MiscUtil.merge({
+        const data = merge({
           url: MiscUtil.parseUrl(document.location)
         }, targetNode ? DomUtil.getNodeDescriptor(targetNode) : { id });
 
@@ -86,7 +86,7 @@ export default class Scribe {
             target: data
           },
           source: {
-            url: MiscUtil.merge(MiscUtil.parseUrl(document.location), {
+            url: merge(MiscUtil.parseUrl(document.location), {
               hash: self.oldHash // Override the hash
             })
           }
@@ -160,7 +160,7 @@ export default class Scribe {
           const parsedUrl = MiscUtil.parseUrl(el.href);
           const value = {
             eventCustomData: {
-              target: MiscUtil.merge({ url: parsedUrl }, DomUtil.getNodeDescriptor(el))
+              target: merge({ url: parsedUrl }, DomUtil.getNodeDescriptor(el))
             }
           };
 
@@ -215,7 +215,7 @@ export default class Scribe {
           }
 
           self.trackLater('formsubmit', {
-            eventCustomData: { form: MiscUtil.merge({ formId: e.form.formId }, DomUtil.getFormData(e.form)) }
+            eventCustomData: { form: merge({ formId: e.form.formId }, DomUtil.getFormData(e.form)) }
           });
         }
       });
@@ -245,7 +245,7 @@ export default class Scribe {
       // because the URL is not known at the time of the event:
       if (ArrayUtil.contains(['browser:redirect', 'browser:formSubmit'], event_type)) {
         message.value.eventCustomData = message.value.eventCustomData || {};
-        message.value.eventCustomData.target = MiscUtil.jsonify(MiscUtil.merge(message.value.eventCustomData.target || {}, { url: MiscUtil.parseUrl(document.location) }));
+        message.value.eventCustomData.target = MiscUtil.jsonify(merge(message.value.eventCustomData.target || {}, { url: MiscUtil.parseUrl(document.location) }));
       }
 
       // If source and target urls are the same, change redirect events
@@ -290,14 +290,14 @@ export default class Scribe {
     props.eventTypeVersion = EVENT_TYPE_VERSION;
     props.clientTimestamp = props.clientTimestamp || (new Date()).toISOString();
     props.eventType = `browser:${name}`;
-    props.source = MiscUtil.merge(Env.getPageloadData(), props.source || {});
-    const rootEvent = MiscUtil.merge({
+    props.source = merge(Env.getPageloadData(), props.source || {});
+    const rootEvent = merge({
       context: this.context,
       user: this.user,
       content: this.content
     }, this.rootEvent);
 
-    return MiscUtil.jsonify(MiscUtil.merge(rootEvent, props));
+    return MiscUtil.jsonify(merge(rootEvent, props));
   }
 
   /**

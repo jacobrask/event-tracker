@@ -1,3 +1,4 @@
+import isEqual from 'lodash.isequal';
 const MiscHelper = {};
 
 // Needed to handle private browsing in safari and quota exceded
@@ -50,48 +51,6 @@ MiscHelper.copyFields = (source, target) => {
   }
 
   return target;
-};
-
-MiscHelper.merge = (o1, o2) => {
-  let r;
-  let key;
-  let index;
-
-  if (o1 === undefined) return o1;
-  else if (o2 === undefined) return o1;
-  else if (o1 instanceof Array && o2 instanceof Array) {
-    r = [];
-    // Copy
-    for (index = 0; index < o1.length; index++) {
-      r.push(o1[index]);
-    }
-    // Merge
-    for (index = 0; index < o2.length; index++) {
-      if (r.length > index) {
-        r[index] = MiscHelper.merge(r[index], o2[index]);
-      } else {
-        r.push(o2[index]);
-      }
-    }
-    return r;
-  } else if (o1 instanceof Object && o2 instanceof Object) {
-    r = {};
-    // Copy:
-    for (key in o1) {
-      r[key] = o1[key];
-    }
-    // Merge:
-    for (key in o2) {
-      if (r[key] !== undefined) {
-        r[key] = MiscHelper.merge(r[key], o2[key]);
-      } else {
-        r[key] = o2[key];
-      }
-    }
-    return r;
-  }
-  return o2;
-
 };
 
 MiscHelper.toObject = olike => {
@@ -248,41 +207,6 @@ MiscHelper.parseUrl = url => {
 
 MiscHelper.unparseUrl = url => `${url.protocol || ''}//${url.host || ''}${url.pathname || ''}${MiscHelper.unparseQueryString(url.query)}${url.hash || ''}`;
 
-MiscHelper.equals = (v1, v2) => {
-  const leftEqualsObject = (o1, o2) => {
-    for (const k in o1) {
-      if (!o1.hasOwnProperty || o1.hasOwnProperty(k)) {
-        if (!MiscHelper.equals(o1[k], o2[k])) return false;
-      }
-    }
-    return true;
-  };
-
-  if (v1 instanceof Array) {
-    if (v2 instanceof Array) {
-      if (v1.length !== v2.length) return false;
-
-      for (let i = 0; i < v1.length; i++) {
-        if (!MiscHelper.equals(v1[i], v2[i])) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-    return false;
-
-  } else if (v1 instanceof Object) {
-    if (v2 instanceof Object) {
-      return leftEqualsObject(v1, v2) && leftEqualsObject(v2, v1);
-    }
-    return false;
-
-  }
-  return v1 === v2;
-
-};
-
 MiscHelper.isSamePage = (url1, url2) => {
   url1 = url1 instanceof String ? MiscHelper.parseUrl(url1) : url1;
   url2 = url2 instanceof String ? MiscHelper.parseUrl(url2) : url2;
@@ -291,7 +215,7 @@ MiscHelper.isSamePage = (url1, url2) => {
   return url1.protocol === url2.protocol &&
     url1.host === url2.host &&
     url1.pathname === url2.pathname &&
-    MiscHelper.equals(url1.query, url2.query);
+    isEqual(url1.query, url2.query);
 };
 
 MiscHelper.qualifyUrl = url => {

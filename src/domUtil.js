@@ -1,4 +1,6 @@
-import Util from 'miscUtil';
+import merge from 'lodash.merge';
+
+import MiscUtil from 'miscUtil';
 
 const DomUtil = {};
 
@@ -83,7 +85,7 @@ DomUtil.monitorElements = (selectors, onnew, refresh) => {
 
 DomUtil.getDataset = node => {
   if (typeof node.dataset !== 'undefined') {
-    return Util.toObject(node.dataset);
+    return MiscUtil.toObject(node.dataset);
   } else if (node.attributes) {
     const dataset = {};
 
@@ -167,7 +169,7 @@ DomUtil.simulateMouseEvent = (element, eventName, options) => {
     'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/
   };
 
-  options = Util.merge({
+  options = merge({
     pointerX: 0,
     pointerY: 0,
     button: 0,
@@ -204,7 +206,7 @@ DomUtil.simulateMouseEvent = (element, eventName, options) => {
     options.clientY = options.pointerY;
     const evt = document.createEventObject();
 
-    oEvent = Util.merge(evt, options);
+    oEvent = merge(evt, options);
     try {
       element.fireEvent(`on${eventName}`, oEvent);
     } catch (error) {

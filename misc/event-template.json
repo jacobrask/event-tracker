@@ -1,7 +1,7 @@
 {
   // new root field ids
   // for client_id, payway_id, user_service_id etc...
-  "ids":{
+  "ids": {
     /*
     After future discussion it would be nice to have a
     id on anon users that would be the same on different
@@ -26,24 +26,22 @@
     are deleted (at least iphone). Reinstalling a app then will
     give a new device id. TODO: CONFIRM
     */
-    "client_id": "c3c9058c-8548-33d6-5428-e7b054136852",
+    "clientId": "c3c9058c-8548-33d6-5428-e7b054136852",
     /*
     payway_id is the payway id, this id stay the same across
     sites and mobile apps though only set for logged in users
     */
-    "payway_id": "59d1d331996e590006001978",
+    "paywayId": "59d1d331996e590006001978",
     /*
     user_id is the primary user id, probably the same a another
     of the ids in this object.
     */
-    "user_id": "59d1d331996e590006001978",
+    "userId": "59d1d331996e590006001978",
     /*
     user_service_id is Mittmedia specific and optional
     */
-    "user_service_id": "1"
+    "userServiceId": "1"
   },
-
-
   /*
   current in browser:
   session_id is a generated uuid that is stored in the sessionStorage,
@@ -56,27 +54,23 @@
   after a defined period of inactivity. COuld also be solved with cookies with
   TTL.
   */
-  "session_id": "3346c39a-7afe-fa42-9ed6-ae343ec3a1be",
-
+  "sessionId": "3346c39a-7afe-fa42-9ed6-ae343ec3a1be",
   /*
   server_timestamp is the time at which the event reached the backend.
   This can be used of the client_timestamp is invalid or suspicious.
   */
-  "server_timestamp": "2017-10-04T10:01:39.646Z",
-
+  "serverTimestamp": "2017-10-04T10:01:39.646Z",
   /*
   client_timestamp is the time of the event according to the client.
   There are a few outliers here, like events that occur in the future
   or around 1970.
   */
-  "client_timestamp": "2017-10-04T10:01:38.313Z",
-
+  "clientTimestamp": "2017-10-04T10:01:38.313Z",
   /*
   remote_ip is added by the server, using x-forwarded-for alternatively
   remote_ip if there isn't any x-forwarded-for
   */
-  "remote_ip": "95.195.195.105, 162.158.182.67",
-
+  "remoteIp": "95.195.195.105, 162.158.182.67",
   /*
   event_type is set by the client, browser:<event>, app:<event>.
   Should preferably say something about the data structure of the event,
@@ -88,17 +82,15 @@
   the specific button or link in another attribute like target or some custom
   attribute in the event_type_data object
   */
-  "event_type": "browser:pageview",
-
+  "eventType": "browser:pageview",
   /* version */
-  "event_type_version": "1",
-
+  "eventTypeVersion": "1",
   /*
   other suggestions are event_type_data or event_type_custom_data, event_custom_data and dropping
   the root data object.
   Only validated by valid json and length(?)
   */
-  "event_custom_data": {
+  "eventCustomData": {
     /*
     copied from a browser click event on this element:
     <a class="navigation-action" data-pelican="{"type":"clickOnce", "name":"Clicked on level 2 nav item","properties":{"name":"TV"}}" href="/tv" scribe_scanned="true" target="_self">TV</a>
@@ -113,7 +105,7 @@
       },
       "selector": "header:nth-child(4)>div.big:nth-child(1)>div.topmenu-strip.consumer_signed_in:nth-child(1)>div.topmenu-navbar:nth-child(3)>div.topmenu-navbar-level-two:nth-child(2)>div.topmenu-navbar-inner.row:nth-child(1)>nav#topmenu-navbar-level-two-navigation-big.topmenu-navbar-level-navigation.at-right.at-left:nth-child(1)>ul.topmenu-navigation-list:nth-child(1)>li.navigation-item:nth-child(2)>a.navigation-action:nth-child(1)",
       "data": {
-        "pelican": {
+        "event": {
           "type": "clickOnce",
           "name": "Clicked on level 2 nav item",
           "properties": {
@@ -123,7 +115,6 @@
       }
     }
   },
-
   /*
   client generated UUID generated at the time of the event to be able to
   remove duplicates in selections of events.
@@ -136,21 +127,19 @@
   to our domain and we send all events stored in the localStorage outbox.
   Also if we double import events or similar.
   */
-  "event_id": "c3c9058c-8548-33d6-5428-e7b054136852",
-
+  "eventId": "c3c9058c-8548-33d6-5428-e7b054136852",
   /* version of event_service added by event_service */
-  "event_service_version":"1",
-
+  "eventServiceVersion": "1",
   /*
   context is the event context surrounding the event
   */
   "context": {
-    "organization_id": "mittmedia",
-    "product_id": "se.mittmedia.site.dt",
+    "organizationId": "mittmedia",
+    "productId": "se.mittmedia.site.dt",
     // Optional
     "application": {
       // site http status code
-      "status_code": 200,
+      "statusCode": 200,
       "controller": "start",
       "action": "index"
     }
@@ -159,7 +148,7 @@
     // content_state is the state that the current content had when the event occurred
     "state": "open|locked|soft_locked|soft_open|paywalled|...",
     // article_id is the article id
-    "article_id": "xyz",
+    "articleId": "xyz",
     "section": null,
     /*
     content_keywords is a array of content_keywords, article, has_video, section, tags, categories etc.
@@ -176,13 +165,18 @@
     user_state is the state that the user had when the event occurred
     */
     "state": "anon|logged_in|premium|plus|gold|..",
-    "products": ["xyz", "abc"],
-    "position": {"lon": 1, "lat": 2},
+    "products": [
+      "xyz",
+      "abc"
+    ],
+    "position": {
+      "lon": 1,
+      "lat": 2
+    },
     "location": "Stockholm"
     // "functions": ["comment"],
     // "subscription": ["email"]
   },
-
   /*
   source is data extracted from the client.
   */
@@ -207,10 +201,10 @@
     "screen": {
       "width": 1440,
       "height": 900,
-      "color_depth": 24
+      "colorDepth": 24
     },
     "locale": {
-      "timezone_offset": -120,
+      "timezoneOffset": -120,
       "language": "sv-SE"
     },
     "document": {
@@ -226,10 +220,8 @@
       "language": "sv-SE"
     }
   },
-
-
   "headers": {
-    "x-forwarded-for": "95.195.195.105, 162.158.182.67",
+    "x-forwarded-for": "95.195.195.105, 162.158.182.67"
 
     /* No value */
     //"referer": "http://www.st.nu/",

@@ -98,7 +98,31 @@
   the root data object.
   Only validated by valid json and length(?)
   */
-  "event_custom_data": {},
+  "event_custom_data": {
+    /*
+    copied from a browser click event on this element:
+    <a class="navigation-action" data-pelican="{"type":"clickOnce", "name":"Clicked on level 2 nav item","properties":{"name":"TV"}}" href="/tv" scribe_scanned="true" target="_self">TV</a>
+    target.data is not validated and stored as a string
+    */
+    "target": {
+      "url": {
+        "host": "www.st.nu",
+        "hostname": "www.st.nu",
+        "pathname": "/tv",
+        "protocol": "http:"
+      },
+      "selector": "header:nth-child(4)>div.big:nth-child(1)>div.topmenu-strip.consumer_signed_in:nth-child(1)>div.topmenu-navbar:nth-child(3)>div.topmenu-navbar-level-two:nth-child(2)>div.topmenu-navbar-inner.row:nth-child(1)>nav#topmenu-navbar-level-two-navigation-big.topmenu-navbar-level-navigation.at-right.at-left:nth-child(1)>ul.topmenu-navigation-list:nth-child(1)>li.navigation-item:nth-child(2)>a.navigation-action:nth-child(1)",
+      "data": {
+        "pelican": {
+          "type": "clickOnce",
+          "name": "Clicked on level 2 nav item",
+          "properties": {
+            "name": "TV"
+          }
+        }
+      }
+    }
+  },
 
   /*
   client generated UUID generated at the time of the event to be able to
@@ -203,29 +227,6 @@
     }
   },
 
-  /*
-  copied from a browser click event on this element:
-  <a class="navigation-action" data-pelican="{"type":"clickOnce", "name":"Clicked on level 2 nav item","properties":{"name":"TV"}}" href="/tv" scribe_scanned="true" target="_self">TV</a>
-  target.data is not validated and stored as a string
-  */
-  "target": {
-    "url": {
-      "host": "www.st.nu",
-      "hostname": "www.st.nu",
-      "pathname": "/tv",
-      "protocol": "http:"
-    },
-    "selector": "header:nth-child(4)>div.big:nth-child(1)>div.topmenu-strip.consumer_signed_in:nth-child(1)>div.topmenu-navbar:nth-child(3)>div.topmenu-navbar-level-two:nth-child(2)>div.topmenu-navbar-inner.row:nth-child(1)>nav#topmenu-navbar-level-two-navigation-big.topmenu-navbar-level-navigation.at-right.at-left:nth-child(1)>ul.topmenu-navigation-list:nth-child(1)>li.navigation-item:nth-child(2)>a.navigation-action:nth-child(1)",
-    "data": {
-      "pelican": {
-        "type": "clickOnce",
-        "name": "Clicked on level 2 nav item",
-        "properties": {
-          "name": "TV"
-        }
-      }
-    }
-  },
 
   "headers": {
     "x-forwarded-for": "95.195.195.105, 162.158.182.67",

@@ -28,7 +28,7 @@
 
 <script language="JavaScript">
   var scribe =  new Scribe.Scribe({
-    tracker: new Scribe.ConsoleTracker(),
+    tracker: new Scribe.HttpTracker({"url": "http://localhost:8080/api/v1/events"}),
     trackClicks: false,
     trackHashChanges: true,
     trackElementClicks: true,

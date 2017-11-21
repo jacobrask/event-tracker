@@ -57,13 +57,10 @@ export default class Scribe {
       clickElementSelectors: ['a']
     }, this.options);
 
-    this.user = MiscUtil.merge({
-      clientId: Env.getVisitorId()
-    }, this.user);
-
     this.rootEvent =
     MiscUtil.merge({
-      sessionId: Env.getSessionId()
+      sessionId: Env.getSessionId(),
+      clientId: Env.getVisitorId()
     }, this.rootEvent);
 
     // Always assume that Javascript is the culprit of leaving the page

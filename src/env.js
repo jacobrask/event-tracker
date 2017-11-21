@@ -39,7 +39,7 @@ Env.getReferrerData = () => document.referrer && MiscUtil.parseUrl(document.refe
 Env.getScreenData = () => ({
   height: screen.height,
   width: screen.width,
-  color_depth: screen.colorDepth
+  colorDepth: screen.colorDepth
 });
 
 Env.getLocaleData = () => {
@@ -105,25 +105,5 @@ Env.getVisitorId = () => {
   MiscUtil.store.local.setItem('scribe_vid', visitor_id);
   return visitor_id;
 };
-
-/*
-// Todo: Should be broken out
-Env.getMMData = () => ({
-  site_id: window.SiteObject.site_id,
-  payway_id: window.user.payway_id,
-  comscore_id: window.MiscUtil.get_cookie('m_visitor'),
-  article_id: window.PageObject && window.PageObject.article_id || null,
-  content_keywords: window.content_keywords,
-  consumer_location: window.MiscUtil.get_cookie('consumer_location')
-});
-
-// Todo: Should be broken out
-Env.getSparrowData = () => ({
-  status_code: window.SiteObject.status_code,
-  section: window.SiteObject.section,
-  controller: window.SiteObject.controller_name,
-  action: window.SiteObject.action_name
-});
-*/
 
 export default Env;

@@ -17,12 +17,12 @@ MiscHelper.store = {
     }
   },
   session: {
-    getItem(key) {return MiscHelper.store.getItem(window.sessionStorage, key);},
-    setItem(key, value) {return MiscHelper.store.setItem(sessionStorage, key, value);}
+    getItem(key) { return MiscHelper.store.getItem(window.sessionStorage, key); },
+    setItem(key, value) { return MiscHelper.store.setItem(sessionStorage, key, value); }
   },
   local: {
-    getItem(key) {return MiscHelper.store.getItem(window.localStorage, key);},
-    setItem(key, value) {return MiscHelper.store.setItem(localStorage, key, value);}
+    getItem(key) { return MiscHelper.store.getItem(window.localStorage, key); },
+    setItem(key, value) { return MiscHelper.store.setItem(localStorage, key, value); }
   }
 };
 

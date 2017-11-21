@@ -145,7 +145,7 @@ export default class Scribe {
           // TODO: Make sure the link is actually to a page.
           // It's a click, not a Javascript redirect:
           self.javascriptRedirect = false;
-          setTimeout(() => {self.javascriptRedirect = true;}, 500);
+          setTimeout(() => { self.javascriptRedirect = true; }, 500);
 
           const parsedUrl = MiscUtil.parseUrl(el.href);
           const value = { target: MiscUtil.merge({ url: parsedUrl }, DomUtil.getNodeDescriptor(el)) };

@@ -38,6 +38,18 @@ export default class Scribe {
     return this.context;
   }
 
+  content() {
+    return this.content;
+  }
+
+  user() {
+    return this.user;
+  }
+
+  setUser(user) {
+    this.user = user;
+  }
+
   /**
    * Initializes Scribe. This is called internally by the constructor and does
    * not need to be called manually.

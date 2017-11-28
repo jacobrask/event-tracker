@@ -25,11 +25,30 @@
 </div>
 
 <button onclick="track();">Track custom</button>
+<button onclick="changeUser();">Change user</button>
 
 <script language="JavaScript">
   function track() {
     scribe.track('customEvent', { content: { keywords: 'should overwrite initialized' } });
   }
+
+  function changeUser() {
+    scribe.setUser(
+    {
+      'paywayId': '2b2222222222222222222222',
+      'userId': '2b2222222222222222222222',
+      'state': 'logged_in',
+      'products': [
+        'test-product-2'
+      ],
+      'position': {
+        'lon': 2,
+        'lat': 1
+      },
+      'location': 'Svalbard'
+    })
+  }
+
 </script>
 </body>
 </html>

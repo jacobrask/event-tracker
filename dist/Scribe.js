@@ -2790,6 +2790,21 @@ var Scribe = function () {
     value: function context() {
       return this.context;
     }
+  }, {
+    key: 'content',
+    value: function content() {
+      return this.content;
+    }
+  }, {
+    key: 'user',
+    value: function user() {
+      return this.user;
+    }
+  }, {
+    key: 'setUser',
+    value: function setUser(user) {
+      this.user = user;
+    }
 
     /**
      * Initializes Scribe. This is called internally by the constructor and does

@@ -2,7 +2,7 @@
 
 import 'jsdom-global/register';
 import chai from 'chai';
-import {Scribe} from '../lib/library.js';
+import {Scribe} from '../dist/Scribe.js';
 
 chai.expect();
 

@@ -17,15 +17,16 @@ const EVENT_TYPE_VERSION = 1;
  */
 
 export default class Scribe {
-  constructor(options = {}, context = {}, user = {}, content = {}) {
-    if (!(this instanceof Scribe)) return new Scribe(options, context);
+  constructor(options = {}, initialData = {}) {
+    if (!(this instanceof Scribe)) return new Scribe(options, initialData);
 
     this.rootEvent = {};
     this.options = options;
-    this.context = context;
-    this.user = user;
-    this.content = content;
     this.trackerInstance = options.tracker;
+
+    this.context = initialData.context;
+    this.user = initialData.user;
+    this.content = initialData.content;
 
     this.initialize();
   }

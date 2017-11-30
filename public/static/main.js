@@ -6,17 +6,18 @@ const scribe = new Scribe.Scribe({
   trackPageViews: true,
   waitOnTracker: false
 }, {
-  'organizationId': 'test-organization',
-  'productId': 'se.test.product',
-  // Optional
-  'application': {
-    // site http status code
-    'statusCode': 200,
-    'controller': 'start',
-    'action': 'index'
-  }
-},
-  {
+  context: {
+    'organizationId': 'test-organization',
+    'productId': 'se.test.product',
+    // Optional
+    'application': {
+      // site http status code
+      'statusCode': 200,
+      'controller': 'start',
+      'action': 'index'
+    }
+  },
+  user: {
     'paywayId': '59d1d331996e590006001978',
     'userId': '59d1d331996e590006001978',
     'state': 'logged_in',
@@ -29,7 +30,7 @@ const scribe = new Scribe.Scribe({
     },
     'location': 'Stockholm'
   },
-  {
+  content: {
     'state': 'open',
     'articleId': '1234',
     'section': null,
@@ -38,4 +39,4 @@ const scribe = new Scribe.Scribe({
       'index'
     ]
   }
-);
+});

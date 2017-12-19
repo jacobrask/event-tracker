@@ -240,8 +240,17 @@ export default class Scribe {
     this._sendOutbox();
   }
 
+  _clearOutbox() {
+    MiscUtil.store.local.setItem('scribe_outbox', JSON.stringify([]));
+  }
+
   _saveOutbox() {
-    MiscUtil.store.local.setItem('scribe_outbox', JSON.stringify(this.outbox));
+    // Get all old message and append the new ones
+    const localStorageMessages = JSON.parse(MiscUtil.store.local.getItem('scribe_outbox') || '[]');
+    const allMessages = localStorageMessages.concat(this.outbox);
+
+    MiscUtil.store.local.setItem('scribe_outbox', JSON.stringify(allMessages));
+    this.outbox = [];
   }
 
   _loadOutbox() {
@@ -290,7 +299,7 @@ export default class Scribe {
       }
     }
     this.outbox = [];
-    this._saveOutbox();
+    this._clearOutbox();
   }
 
   /**

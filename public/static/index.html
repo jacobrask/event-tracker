@@ -29,7 +29,7 @@
 
 <script language="JavaScript">
   function track() {
-    scribe.track('customEvent', { content: { keywords: 'should overwrite initialized' } });
+    scribe.track('customEvent', { content: { keywords: [ 'should', 'overwrite', 'initialized' ] } });
   }
 
   function changeUser() {

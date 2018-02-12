@@ -7,18 +7,18 @@ import merge from 'lodash.merge';
 
 const EVENT_TYPE_VERSION = 1;
 /**
- * Constructs a new Scribe Analytics tracker.
+ * Constructs a new EventTracker Analytics tracker.
  *
- * @constructor Scribe
+ * @constructor EventTracker
  *
  * @param options.tracker   The tracker to use for tracking events.
  *                          Must be: function(collection, event).
  *
  */
 
-export default class Scribe {
+export default class EventTracker {
   constructor(options = {}, initialData = {}) {
-    if (!(this instanceof Scribe)) return new Scribe(options, initialData);
+    if (!(this instanceof EventTracker)) return new EventTracker(options, initialData);
 
     this.rootEvent = {};
     this.options = options;
@@ -52,7 +52,7 @@ export default class Scribe {
   }
 
   /**
-   * Initializes Scribe. This is called internally by the constructor and does
+   * Initializes EventTracker. This is called internally by the constructor and does
    * not need to be called manually.
    */
   initialize() {
@@ -241,20 +241,20 @@ export default class Scribe {
   }
 
   _clearOutbox() {
-    MiscUtil.store.local.setItem('scribe_outbox', JSON.stringify([]));
+    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify([]));
   }
 
   _saveOutbox() {
     // Get all old message and append the new ones
-    const localStorageMessages = JSON.parse(MiscUtil.store.local.getItem('scribe_outbox') || '[]');
+    const localStorageMessages = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox') || '[]');
     const allMessages = localStorageMessages.concat(this.outbox);
 
-    MiscUtil.store.local.setItem('scribe_outbox', JSON.stringify(allMessages));
+    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify(allMessages));
     this.outbox = [];
   }
 
   _loadOutbox() {
-    this.outbox = JSON.parse(MiscUtil.store.local.getItem('scribe_outbox') || '[]');
+    this.outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox') || '[]');
   }
 
   _sendOutbox() {
@@ -325,7 +325,7 @@ export default class Scribe {
   /**
    * Tracks an event now.
    *
-   * @memberof Scribe
+   * @memberof EventTracker
    *
    * @param name        The name of the event, such as 'downloaded trial'.
    * @param props       An arbitrary JSON object describing properties of the event.
@@ -342,12 +342,12 @@ export default class Scribe {
 
   /**
    * Tracks an event later. The event will only be tracked if the user visits
-   * some page on the same domain that has Scribe Analytics installed.
+   * some page on the same domain that has EventTracker Analytics installed.
    *
    * This function is mainly useful when the user is leaving the page and
    * there is not enough time to capture some user behavior.
    *
-   * @memberof Scribe
+   * @memberof EventTracker
    *
    * @param name        The name of the event, such as 'downloaded trial'.
    * @param props       An arbitrary JSON object describing properties of the event.

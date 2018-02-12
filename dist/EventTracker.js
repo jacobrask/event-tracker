@@ -2,11 +2,11 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
-		define("Scribe", [], factory);
+		define("EventTracker", [], factory);
 	else if(typeof exports === 'object')
-		exports["Scribe"] = factory();
+		exports["EventTracker"] = factory();
 	else
-		root["Scribe"] = factory();
+		root["EventTracker"] = factory();
 })(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -11603,11 +11603,11 @@ module.exports = function (regExp, replace) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.HttpTracker = exports.ConsoleTracker = exports.Scribe = undefined;
+exports.HttpTracker = exports.ConsoleTracker = exports.EventTracker = undefined;
 
-var _scribe = __webpack_require__(332);
+var _eventTracker = __webpack_require__(332);
 
-var _scribe2 = _interopRequireDefault(_scribe);
+var _eventTracker2 = _interopRequireDefault(_eventTracker);
 
 var _consoleTracker = __webpack_require__(341);
 
@@ -11619,7 +11619,7 @@ var _httpTracker2 = _interopRequireDefault(_httpTracker);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.Scribe = _scribe2.default;
+exports.EventTracker = _eventTracker2.default;
 exports.ConsoleTracker = _consoleTracker2.default;
 exports.HttpTracker = _httpTracker2.default;
 
@@ -11666,23 +11666,23 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var EVENT_TYPE_VERSION = 1;
 /**
- * Constructs a new Scribe Analytics tracker.
+ * Constructs a new EventTracker Analytics tracker.
  *
- * @constructor Scribe
+ * @constructor EventTracker
  *
  * @param options.tracker   The tracker to use for tracking events.
  *                          Must be: function(collection, event).
  *
  */
 
-var Scribe = function () {
-  function Scribe() {
+var EventTracker = function () {
+  function EventTracker() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var initialData = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-    _classCallCheck(this, Scribe);
+    _classCallCheck(this, EventTracker);
 
-    if (!(this instanceof Scribe)) return new Scribe(options, initialData);
+    if (!(this instanceof EventTracker)) return new EventTracker(options, initialData);
 
     this.rootEvent = {};
     this.options = options;
@@ -11695,7 +11695,7 @@ var Scribe = function () {
     this.initialize();
   }
 
-  _createClass(Scribe, [{
+  _createClass(EventTracker, [{
     key: 'options',
     value: function options() {
       return this.options;
@@ -11722,7 +11722,7 @@ var Scribe = function () {
     }
 
     /**
-     * Initializes Scribe. This is called internally by the constructor and does
+     * Initializes EventTracker. This is called internally by the constructor and does
      * not need to be called manually.
      */
 
@@ -11916,22 +11916,22 @@ var Scribe = function () {
   }, {
     key: '_clearOutbox',
     value: function _clearOutbox() {
-      _miscUtil2.default.store.local.setItem('scribe_outbox', JSON.stringify([]));
+      _miscUtil2.default.store.local.setItem('event_tracker_outbox', JSON.stringify([]));
     }
   }, {
     key: '_saveOutbox',
     value: function _saveOutbox() {
       // Get all old message and append the new ones
-      var localStorageMessages = JSON.parse(_miscUtil2.default.store.local.getItem('scribe_outbox') || '[]');
+      var localStorageMessages = JSON.parse(_miscUtil2.default.store.local.getItem('event_tracker_outbox') || '[]');
       var allMessages = localStorageMessages.concat(this.outbox);
 
-      _miscUtil2.default.store.local.setItem('scribe_outbox', JSON.stringify(allMessages));
+      _miscUtil2.default.store.local.setItem('event_tracker_outbox', JSON.stringify(allMessages));
       this.outbox = [];
     }
   }, {
     key: '_loadOutbox',
     value: function _loadOutbox() {
-      this.outbox = JSON.parse(_miscUtil2.default.store.local.getItem('scribe_outbox') || '[]');
+      this.outbox = JSON.parse(_miscUtil2.default.store.local.getItem('event_tracker_outbox') || '[]');
     }
   }, {
     key: '_sendOutbox',
@@ -12029,7 +12029,7 @@ var Scribe = function () {
     /**
      * Tracks an event now.
      *
-     * @memberof Scribe
+     * @memberof EventTracker
      *
      * @param name        The name of the event, such as 'downloaded trial'.
      * @param props       An arbitrary JSON object describing properties of the event.
@@ -12049,12 +12049,12 @@ var Scribe = function () {
 
     /**
      * Tracks an event later. The event will only be tracked if the user visits
-     * some page on the same domain that has Scribe Analytics installed.
+     * some page on the same domain that has EventTracker Analytics installed.
      *
      * This function is mainly useful when the user is leaving the page and
      * there is not enough time to capture some user behavior.
      *
-     * @memberof Scribe
+     * @memberof EventTracker
      *
      * @param name        The name of the event, such as 'downloaded trial'.
      * @param props       An arbitrary JSON object describing properties of the event.
@@ -12091,10 +12091,10 @@ var Scribe = function () {
     }
   }]);
 
-  return Scribe;
+  return EventTracker;
 }();
 
-exports.default = Scribe;
+exports.default = EventTracker;
 module.exports = exports['default'];
 
 /***/ }),
@@ -14059,10 +14059,10 @@ DomUtil.monitorElements = function (selectors, onnew, refresh) {
     for (i = 0; i < curElements.length; i++) {
       var el = curElements[i];
 
-      var scanned = el.getAttribute('scribe_scanned');
+      var scanned = el.getAttribute('event_tracker_scanned');
 
       if (!scanned) {
-        el.setAttribute('scribe_scanned', true);
+        el.setAttribute('event_tracker_scanned', true);
         try {
           onnew(el);
         } catch (e) {
@@ -14354,16 +14354,16 @@ Env.getPluginsData = function () {
 };
 
 Env.getSessionId = function () {
-  var session_id = _miscUtil2.default.store.session.getItem('scribe_sid') || _miscUtil2.default.genGuid();
+  var session_id = _miscUtil2.default.store.session.getItem('event_tracker_sid') || _miscUtil2.default.genGuid();
 
-  _miscUtil2.default.store.session.setItem('scribe_sid', session_id);
+  _miscUtil2.default.store.session.setItem('event_tracker_sid', session_id);
   return session_id;
 };
 
 Env.getClientId = function () {
-  var client_id = _miscUtil2.default.store.local.getItem('scribe_cid') || _miscUtil2.default.genGuid();
+  var client_id = _miscUtil2.default.store.local.getItem('event_tracker_cid') || _miscUtil2.default.genGuid();
 
-  _miscUtil2.default.store.local.setItem('scribe_cid', client_id);
+  _miscUtil2.default.store.local.setItem('event_tracker_cid', client_id);
   return client_id;
 };
 
@@ -15165,4 +15165,4 @@ module.exports = exports['default'];
 /***/ })
 /******/ ]);
 });
-//# sourceMappingURL=Scribe.js.map
+//# sourceMappingURL=EventTracker.js.map

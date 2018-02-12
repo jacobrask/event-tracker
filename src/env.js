@@ -93,16 +93,16 @@ Env.getPluginsData = () => {
 };
 
 Env.getSessionId = () => {
-  const session_id = MiscUtil.store.session.getItem('scribe_sid') || MiscUtil.genGuid();
+  const session_id = MiscUtil.store.session.getItem('event_tracker_sid') || MiscUtil.genGuid();
 
-  MiscUtil.store.session.setItem('scribe_sid', session_id);
+  MiscUtil.store.session.setItem('event_tracker_sid', session_id);
   return session_id;
 };
 
 Env.getClientId = () => {
-  const client_id = MiscUtil.store.local.getItem('scribe_cid') || MiscUtil.genGuid();
+  const client_id = MiscUtil.store.local.getItem('event_tracker_cid') || MiscUtil.genGuid();
 
-  MiscUtil.store.local.setItem('scribe_cid', client_id);
+  MiscUtil.store.local.setItem('event_tracker_cid', client_id);
   return client_id;
 };
 

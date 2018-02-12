@@ -1,5 +1,6 @@
-const scribe = new Scribe.Scribe({
-  tracker: new Scribe.ConsoleTracker({ 'url': 'http://localhost:8080/api/v1/events' }),
+/* global EventTracker */
+const eventTracker = new EventTracker.EventTracker({
+  tracker: new EventTracker.ConsoleTracker({ 'url': 'http://localhost:8080/api/v1/events' }),
   trackClicks: false,
   trackHashChanges: true,
   trackElementClicks: true,

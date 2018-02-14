@@ -125,6 +125,7 @@ export default class EventTracker {
           const ancestors = DomUtil.getAncestors(e.target);
 
           // Do not track clicks on links, these are tracked separately!
+          // Beware, this should check if trackElementSelectors is true and if current element is in clickElementSelectors.
           if (!ArrayUtil.exists(ancestors, e => e.tagName === 'A')) {
             self.track('click', {
               eventCustomData: {

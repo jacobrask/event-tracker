@@ -11740,7 +11740,8 @@ var EventTracker = function () {
         trackElementClicks: false,
         trackRedirects: false,
         trackSubmissions: false,
-        clickElementSelectors: ['a']
+        clickElementSelectors: ['a'],
+        eventTypePrefix: 'browser'
       }, this.options);
 
       this.rootEvent = (0, _lodash2.default)({
@@ -12016,7 +12017,7 @@ var EventTracker = function () {
       props.eventId = props.eventId || _miscUtil2.default.genGuid();
       props.eventTypeVersion = EVENT_TYPE_VERSION;
       props.clientTimestamp = props.clientTimestamp || new Date().toISOString();
-      props.eventType = 'browser:' + name;
+      props.eventType = this.options.eventTypePrefix + ':' + name;
       props.source = (0, _lodash2.default)(_env2.default.getPageloadData(), props.source || {});
       var rootEvent = (0, _lodash2.default)({
         context: this.context,

@@ -11798,6 +11798,7 @@ var EventTracker = function () {
             var ancestors = _domUtil2.default.getAncestors(e.target);
 
             // Do not track clicks on links, these are tracked separately!
+            // Beware, this should check if trackElementSelectors is true and if current element is in clickElementSelectors.
             if (!_arrayUtil2.default.exists(ancestors, function (e) {
               return e.tagName === 'A';
             })) {
@@ -12012,7 +12013,7 @@ var EventTracker = function () {
     value: function _createEvent(name) {
       var props = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-      props.eventId = _miscUtil2.default.genGuid();
+      props.eventId = props.eventId || _miscUtil2.default.genGuid();
       props.eventTypeVersion = EVENT_TYPE_VERSION;
       props.clientTimestamp = props.clientTimestamp || new Date().toISOString();
       props.eventType = 'browser:' + name;

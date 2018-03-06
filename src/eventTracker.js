@@ -309,7 +309,7 @@ export default class EventTracker {
    * JSON objects that contains all event details.
    */
   _createEvent(name, props = {}) {
-    props.eventId = MiscUtil.genGuid();
+    props.eventId = props.eventId || MiscUtil.genGuid();
     props.eventTypeVersion = EVENT_TYPE_VERSION;
     props.clientTimestamp = props.clientTimestamp || (new Date()).toISOString();
     props.eventType = `browser:${name}`;

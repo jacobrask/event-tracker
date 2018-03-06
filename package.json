@@ -2,12 +2,12 @@
   "name": "event-tracker",
   "version": "0.0.1",
   "description": "Event tracking lib",
-  "main": "dist/Scribe.min.js",
+  "main": "dist/EventTracker.min.js",
   "scripts": {
     "build": "webpack --env build",
     "dev": "webpack --progress --colors --watch --env dev",
-    "test": "mocha --compilers js:babel-core/register --colors ./test/*.spec.js",
-    "test:watch": "mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"
+    "test": "mocha --compilers js:babel-core/register --colors ./test/browser/*.spec.js",
+    "test:watch": "mocha --compilers js:babel-core/register --colors -w ./test/browser/*.spec.js"
   },
   "devDependencies": {
     "babel-cli": "6.24.1",

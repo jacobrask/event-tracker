@@ -11622,6 +11622,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports.EventTracker = _eventTracker2.default;
 exports.ConsoleTracker = _consoleTracker2.default;
 exports.HttpTracker = _httpTracker2.default;
+exports.default = _eventTracker2.default;
 
 /***/ }),
 /* 332 */

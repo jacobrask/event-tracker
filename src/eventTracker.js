@@ -39,8 +39,16 @@ export default class EventTracker {
     return this.context;
   }
 
+  setContext(context) {
+    this.context = context;
+  }
+
   content() {
     return this.content;
+  }
+
+  setContent(content) {
+    this.content = content;
   }
 
   user() {

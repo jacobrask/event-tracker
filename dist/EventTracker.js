@@ -11707,9 +11707,19 @@ var EventTracker = function () {
       return this.context;
     }
   }, {
+    key: 'setContext',
+    value: function setContext(context) {
+      this.context = context;
+    }
+  }, {
     key: 'content',
     value: function content() {
       return this.content;
+    }
+  }, {
+    key: 'setContent',
+    value: function setContent(content) {
+      this.content = content;
     }
   }, {
     key: 'user',

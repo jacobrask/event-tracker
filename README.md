@@ -88,11 +88,11 @@ Webpack based event tracking library (Input: ES6, Output: universal library)
   });
   
   function track() {
-    EventTracker.track('customEvent', { content: { keywords: [ 'should', 'overwrite', 'initialized' ] } });
+    eventTracker.track('customEvent', { content: { keywords: [ 'should', 'overwrite', 'initialized' ] } });
   }
 
   function changeUser() {
-    EventTracker.setUser(
+    eventTracker.setUser(
     {
       'paywayId': '2b2222222222222222222222',
       'userId': '2b2222222222222222222222',

@@ -275,14 +275,14 @@ export default class EventTracker {
 
       // Specially modify redirect, formSubmit events to save the new URL,
       // because the URL is not known at the time of the event:
-      if (ArrayUtil.contains(['browser:redirect', 'browser:formSubmit'], event_type)) {
+      if (ArrayUtil.contains([`${this.options.eventTypePrefix}:redirect`, `${this.options.eventTypePrefix}:formSubmit`], event_type)) {
         message.value.eventCustomData = message.value.eventCustomData || {};
         message.value.eventCustomData.target = MiscUtil.jsonify(merge(message.value.eventCustomData.target || {}, { url: MiscUtil.parseUrl(document.location) }));
       }
 
       // If source and target urls are the same, change redirect events
       // to reload events:
-      if (event_type === 'browser:redirect') {
+      if (event_type === `${this.options.eventTypePrefix}:redirect`) {
         try {
           // See if it's a redirect (= different url) or reload (= same url):
           const sourceUrl = MiscUtil.unparseUrl(message.value.source.url);
@@ -290,7 +290,7 @@ export default class EventTracker {
 
           if (sourceUrl === targetUrl) {
             // It's a reload:
-            message.value.type = 'browser:reload';
+            message.value.type = `${this.options.eventTypePrefix}:reload`;
           }
         } catch (e) {
           window.onerror && window.onerror(e);

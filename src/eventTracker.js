@@ -76,7 +76,8 @@ export default class EventTracker {
       trackRedirects: false,
       trackSubmissions: false,
       clickElementSelectors: ['a'],
-      eventTypePrefix: 'browser'
+      eventTypePrefix: 'browser',
+      eventTypeVersion: EVENT_TYPE_VERSION
     }, this.options);
 
     this.rootEvent =
@@ -319,7 +320,7 @@ export default class EventTracker {
    */
   _createEvent(name, props = {}) {
     props.eventId = props.eventId || MiscUtil.genGuid();
-    props.eventTypeVersion = EVENT_TYPE_VERSION;
+    props.eventTypeVersion = props.eventTypeVersion || this.options.eventTypeVersion;
     props.clientTimestamp = props.clientTimestamp || (new Date()).toISOString();
     props.eventType = `${this.options.eventTypePrefix}:${name}`;
     props.source = merge(Env.getPageloadData(), props.source || {});

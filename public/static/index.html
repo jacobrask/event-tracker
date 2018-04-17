@@ -25,11 +25,16 @@
 </div>
 
 <button onclick="track();">Track custom</button>
+<button onclick="filteredTrack();">Should be filtered</button>
 <button onclick="changeUser();">Change user</button>
 
 <script language="JavaScript">
   function track() {
     eventTracker.track('customEvent', { content: { keywords: [ 'should', 'overwrite', 'initialized' ] } });
+  }
+
+  function filteredTrack() {
+    eventTracker.track('customEvent', { content: { keywords: [ 'should', 'overwrite', 'initialized' ] }, source: { browser: { bot: true} } } );
   }
 
   function changeUser() {

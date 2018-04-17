@@ -6,9 +6,19 @@ export default class HttpTracker {
     }
     this.config = config;
     this.url = config.url;
+    if (config.filters) {
+      this.filters = config.filters;
+      this._tracker = this._filterAndTrack.bind(this);
+    } else {
+      this._tracker = this._track.bind(this);
+    }
   }
 
   tracker(info) {
+    this._tracker(info);
+  }
+
+  _track(info) {
     const xhr = new XMLHttpRequest();
 
     xhr.open('POST', this.url);
@@ -17,5 +27,18 @@ export default class HttpTracker {
     xhr.onload = info.success;
     xhr.onerror = info.failure;
     xhr.send(JSON.stringify(info.value));
+  }
+
+  _filterAndTrack(info) {
+    if (Array.isArray(info.value)) {
+      info.value = info.value.filter(this._validate.bind(this));
+      if (info.value.length > 0) this._track(info);
+    } else {
+      if (this._validate(info.value)) this._track(info);
+    }
+  }
+
+  _validate(value) {
+    return !this.filters.some((v)=> !v(value));
   }
 }

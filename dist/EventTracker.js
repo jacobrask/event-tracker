@@ -11603,7 +11603,7 @@ module.exports = function (regExp, replace) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.HttpTracker = exports.ConsoleTracker = exports.EventTracker = undefined;
+exports.Filters = exports.HttpTracker = exports.ConsoleTracker = exports.EventTracker = undefined;
 
 var _eventTracker = __webpack_require__(332);
 
@@ -11617,11 +11617,16 @@ var _httpTracker = __webpack_require__(342);
 
 var _httpTracker2 = _interopRequireDefault(_httpTracker);
 
+var _filters = __webpack_require__(343);
+
+var _filters2 = _interopRequireDefault(_filters);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.EventTracker = _eventTracker2.default;
 exports.ConsoleTracker = _consoleTracker2.default;
 exports.HttpTracker = _httpTracker2.default;
+exports.Filters = _filters2.default;
 exports.default = _eventTracker2.default;
 
 /***/ }),
@@ -14388,54 +14393,7 @@ module.exports = exports['default'];
 /* 336 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process) {/**
-  # detect-browser
-
-  This is a package that attempts to detect a browser vendor and version (in
-  a semver compatible format) using a navigator useragent in a browser or
-  `process.version` in node.
-
-  ## NOTE: Version 2.x release
-
-  Release 2.0 introduces a breaking API change (hence the major release)
-  which requires invocation of a `detect` function rather than just inclusion of
-  the module.  PR [#46](https://github.com/DamonOehlman/detect-browser/pull/46)
-  provides more context as to why this change has been made.
-
-  ## Example Usage
-
-  <<< examples/simple.js
-
-  Or you can use a switch statement:
-
-  <<< examples/switch.js
-
-  ## Adding additional browser support
-
-  The current list of browsers that can be detected by `detect-browser` is
-  not exhaustive. If you have a browser that you would like to add support for
-  then please submit a pull request with the implementation.
-
-  Creating an acceptable implementation requires two things:
-
-  1. A test demonstrating that the regular expression you have defined identifies
-     your new browser correctly.  Examples of this can be found in the 
-     `test/logic.js` file.
-
-  2. Write the actual regex to the `lib/detectBrowser.js` file. In most cases adding
-     the regex to the list of existing regexes will be suitable (if usage of `detect-brower`
-     returns `undefined` for instance), but in some cases you might have to add it before
-     an existing regex.  This would be true for a case where you have a browser that
-     is a specialised variant of an existing browser but is identified as the
-     non-specialised case.
-
-  When writing the regular expression remember that you would write it containing a
-  single [capturing group](https://regexone.com/lesson/capturing_groups) which
-  captures the version number of the browser.
-
-**/
-
-function detect() {
+/* WEBPACK VAR INJECTION */(function(process) {function detect() {
   var nodeVersion = getNodeVersion();
   if (nodeVersion) {
     return nodeVersion;
@@ -14488,11 +14446,17 @@ function parseUserAgent(userAgentString) {
     detected.os = detectOS(userAgentString);
   }
 
+  if (/alexa|bot|crawl(er|ing)|facebookexternalhit|feedburner|google web preview|nagios|postrank|pingdom|slurp|spider|yahoo!|yandex/i.test(userAgentString)) {
+    detected = detected || {};
+    detected.bot = true;
+  }
+  
   return detected;
 }
 
 function getBrowserRules() {
   return buildRules([
+    [ 'aol', /AOLShield\/([0-9\._]+)/ ],
     [ 'edge', /Edge\/([0-9\._]+)/ ],
     [ 'yandexbrowser', /YaBrowser\/([0-9\._]+)/ ],
     [ 'vivaldi', /Vivaldi\/([0-9\.]+)/ ],
@@ -14510,7 +14474,9 @@ function getBrowserRules() {
     [ 'bb10', /BB10;\sTouch.*Version\/([0-9\.]+)/ ],
     [ 'android', /Android\s([0-9\.]+)/ ],
     [ 'ios', /Version\/([0-9\._]+).*Mobile.*Safari.*/ ],
-    [ 'safari', /Version\/([0-9\._]+).*Safari/ ]
+    [ 'safari', /Version\/([0-9\._]+).*Safari/ ],
+    [ 'facebook', /FBAV\/([0-9\.]+)/],
+    [ 'instagram', /Instagram\ ([0-9\.]+)/]
   ]);
 }
 
@@ -15102,13 +15068,23 @@ var ConsoleTracker = function () {
     _classCallCheck(this, ConsoleTracker);
 
     if (!(this instanceof ConsoleTracker)) return new ConsoleTracker(config);
-
     this.config = config;
+    if (config.filters) {
+      this.filters = config.filters;
+      this._tracker = this._filterAndTrack.bind(this);
+    } else {
+      this._tracker = this._track.bind(this);
+    }
   }
 
   _createClass(ConsoleTracker, [{
     key: 'tracker',
     value: function tracker(info) {
+      this._tracker(info);
+    }
+  }, {
+    key: '_track',
+    value: function _track(info) {
       var value = info.value;
 
       if (typeof console !== 'undefined') {
@@ -15118,6 +15094,23 @@ var ConsoleTracker = function () {
       } else {
         info.failure && setTimeout(info.failure, 0);
       }
+    }
+  }, {
+    key: '_filterAndTrack',
+    value: function _filterAndTrack(info) {
+      if (Array.isArray(info.value)) {
+        info.value = info.value.filter(this._validate.bind(this));
+        if (info.value.length > 0) this._track(info);
+      } else {
+        if (this._validate(info.value)) this._track(info);
+      }
+    }
+  }, {
+    key: '_validate',
+    value: function _validate(value) {
+      return !this.filters.some(function (v) {
+        return !v(value);
+      });
     }
   }]);
 
@@ -15154,11 +15147,22 @@ var HttpTracker = function () {
     }
     this.config = config;
     this.url = config.url;
+    if (config.filters) {
+      this.filters = config.filters;
+      this._tracker = this._filterAndTrack.bind(this);
+    } else {
+      this._tracker = this._track.bind(this);
+    }
   }
 
   _createClass(HttpTracker, [{
     key: 'tracker',
     value: function tracker(info) {
+      this._tracker(info);
+    }
+  }, {
+    key: '_track',
+    value: function _track(info) {
       var xhr = new XMLHttpRequest();
 
       xhr.open('POST', this.url);
@@ -15168,6 +15172,23 @@ var HttpTracker = function () {
       xhr.onerror = info.failure;
       xhr.send(JSON.stringify(info.value));
     }
+  }, {
+    key: '_filterAndTrack',
+    value: function _filterAndTrack(info) {
+      if (Array.isArray(info.value)) {
+        info.value = info.value.filter(this._validate.bind(this));
+        if (info.value.length > 0) this._track(info);
+      } else {
+        if (this._validate(info.value)) this._track(info);
+      }
+    }
+  }, {
+    key: '_validate',
+    value: function _validate(value) {
+      return !this.filters.some(function (v) {
+        return !v(value);
+      });
+    }
   }]);
 
   return HttpTracker;
@@ -15175,6 +15196,23 @@ var HttpTracker = function () {
 
 exports.default = HttpTracker;
 module.exports = exports['default'];
+
+/***/ }),
+/* 343 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var BotFilter = function BotFilter(event) {
+  return event.source.browser.bot !== true;
+};
+
+exports.default = { BotFilter: BotFilter };
+module.exports = exports["default"];
 
 /***/ })
 /******/ ]);

@@ -157,7 +157,8 @@
     Is this enough or do we need more attributes to encompass logged in and subscription state?
     user_state is the state that the user had when the event occurred
     */
-    "state": ["anonymous","logged_in","premium","plus","gold",".."],
+    "state": "anonymous|logged_in|premium|plus|gold|..",
+    "states": ["anonymous","logged_in","premium","plus","gold",".."],
     "products": [
       "xyz",
       "abc"

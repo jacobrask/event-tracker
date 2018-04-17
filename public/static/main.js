@@ -1,6 +1,13 @@
 /* global EventTracker */
 const eventTracker = new EventTracker.EventTracker({
-  tracker: new EventTracker.ConsoleTracker({ 'url': 'http://localhost:8080/api/v1/events' }),
+  tracker: new EventTracker.ConsoleTracker({
+    url: 'http://localhost:8080/api/v1/events',
+    filters: [
+      () => true,
+      //(event) => event.source.browser.bot !== true,
+      EventTracker.Filters.BotFilter
+    ]
+  }),
   trackClicks: false,
   trackHashChanges: true,
   trackElementClicks: true,

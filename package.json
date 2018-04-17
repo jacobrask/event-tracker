@@ -42,7 +42,7 @@
   "license": "MIT",
   "dependencies": {
     "babel-polyfill": "^6.26.0",
-    "detect-browser": "^2.0.0",
+    "detect-browser": "^2.3.0",
     "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.0"
   }

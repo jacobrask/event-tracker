@@ -14263,6 +14263,7 @@ Env.getBrowserData = function () {
     name: browser && browser.name,
     version: browser && browser.version,
     platform: browser && browser.os,
+    bot: browser && browser.bot,
     language: navigator.language || navigator.userLanguage || navigator.systemLanguage,
     plugins: plugins
   };

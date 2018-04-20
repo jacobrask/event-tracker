@@ -11609,15 +11609,15 @@ var _eventTracker = __webpack_require__(332);
 
 var _eventTracker2 = _interopRequireDefault(_eventTracker);
 
-var _consoleTracker = __webpack_require__(341);
+var _consoleTracker = __webpack_require__(342);
 
 var _consoleTracker2 = _interopRequireDefault(_consoleTracker);
 
-var _httpTracker = __webpack_require__(342);
+var _httpTracker = __webpack_require__(343);
 
 var _httpTracker2 = _interopRequireDefault(_httpTracker);
 
-var _filters = __webpack_require__(343);
+var _filters = __webpack_require__(344);
 
 var _filters2 = _interopRequireDefault(_filters);
 
@@ -11663,7 +11663,7 @@ var _env = __webpack_require__(335);
 
 var _env2 = _interopRequireDefault(_env);
 
-var _eventHelper = __webpack_require__(339);
+var _eventHelper = __webpack_require__(340);
 
 var _eventHelper2 = _interopRequireDefault(_eventHelper);
 
@@ -14251,6 +14251,10 @@ Object.defineProperty(exports, "__esModule", {
 
 var _detectBrowser = __webpack_require__(336);
 
+var _justDetectAdblock = __webpack_require__(339);
+
+var _justDetectAdblock2 = _interopRequireDefault(_justDetectAdblock);
+
 var _miscUtil = __webpack_require__(49);
 
 var _miscUtil2 = _interopRequireDefault(_miscUtil);
@@ -14258,6 +14262,13 @@ var _miscUtil2 = _interopRequireDefault(_miscUtil);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Env = {};
+
+Env.getAdBlocker = function () {
+  if (Env.adBlocker === undefined) {
+    Env.adBlocker = _justDetectAdblock2.default.isDetected();
+  }
+  return Env.adBlocker;
+};
 
 Env.getBrowserData = function () {
   var plugins = null; // Env.getPluginsData()
@@ -14269,6 +14280,7 @@ Env.getBrowserData = function () {
     version: browser && browser.version,
     platform: browser && browser.os,
     bot: browser && browser.bot,
+    adBlocker: Env.getAdBlocker(),
     language: navigator.language || navigator.userLanguage || navigator.systemLanguage,
     plugins: plugins
   };
@@ -14777,6 +14789,49 @@ exports.EOL = '\n';
 
 /***/ }),
 /* 339 */
+/***/ (function(module, exports) {
+
+module.exports = {
+  /**
+   *  Check if an ad blocker is detected
+   *  @return Boolean
+   */
+  isDetected: function(){
+    var detected = false;
+
+    // create the bait
+    var bait = document.createElement('div');
+		bait.setAttribute('class', 'pub_300x250 pub_300x250m pub_728x90 text-ad textAd text_ad text_ads text-ads text-ad-links');
+		bait.setAttribute('style', 'width: 1px ! important; height: 1px !important; position: absolute !important; left: -10000px !important; top: -1000px !important;');
+		window.document.body.appendChild(bait);
+
+    // check if the bait has been affected by an adblocker
+		if(window.document.body.getAttribute('abp') !== null
+		|| bait.offsetParent === null
+		|| bait.offsetHeight == 0
+		|| bait.offsetLeft == 0
+		|| bait.offsetTop == 0
+		|| bait.offsetWidth == 0
+		|| bait.clientHeight == 0
+		|| bait.clientWidth == 0) {
+			detected = true;
+		} else if(window.getComputedStyle !== undefined) {
+			var baitTemp = window.getComputedStyle(bait, null);
+			if(baitTemp && (baitTemp.getPropertyValue('display') == 'none' || baitTemp.getPropertyValue('visibility') == 'hidden')) {
+				detected = true;
+			}
+		}
+
+    // destroy the bait
+    window.document.body.removeChild(bait);
+
+    return detected;
+  }
+};
+
+
+/***/ }),
+/* 340 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14790,7 +14845,7 @@ var _miscUtil = __webpack_require__(49);
 
 var _miscUtil2 = _interopRequireDefault(_miscUtil);
 
-var _handler = __webpack_require__(340);
+var _handler = __webpack_require__(341);
 
 var _handler2 = _interopRequireDefault(_handler);
 
@@ -15005,7 +15060,7 @@ exports.default = EventHelper;
 module.exports = exports['default'];
 
 /***/ }),
-/* 340 */
+/* 341 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15055,7 +15110,7 @@ exports.default = Handler;
 module.exports = exports["default"];
 
 /***/ }),
-/* 341 */
+/* 342 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15127,7 +15182,7 @@ exports.default = ConsoleTracker;
 module.exports = exports['default'];
 
 /***/ }),
-/* 342 */
+/* 343 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15204,7 +15259,7 @@ exports.default = HttpTracker;
 module.exports = exports['default'];
 
 /***/ }),
-/* 343 */
+/* 344 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15223,4 +15278,3 @@ module.exports = exports["default"];
 /***/ })
 /******/ ]);
 });
-//# sourceMappingURL=EventTracker.js.map

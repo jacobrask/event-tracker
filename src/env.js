@@ -1,7 +1,15 @@
 import { detect } from 'detect-browser';
+import adBlocker from 'just-detect-adblock';
 import MiscUtil from 'miscUtil';
 
 const Env = {};
+
+Env.getAdBlocker = () => {
+  if (Env.adBlocker === undefined) {
+    Env.adBlocker = adBlocker.isDetected();
+  }
+  return Env.adBlocker;
+};
 
 Env.getBrowserData = () => {
   const plugins = null; // Env.getPluginsData()
@@ -13,6 +21,7 @@ Env.getBrowserData = () => {
     version: browser && browser.version,
     platform: browser && browser.os,
     bot: browser && browser.bot,
+    adBlocker: Env.getAdBlocker(),
     language: navigator.language || navigator.userLanguage || navigator.systemLanguage,
     plugins
   });

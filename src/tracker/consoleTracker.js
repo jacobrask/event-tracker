@@ -1,7 +1,7 @@
 export default class ConsoleTracker {
   constructor(config) {
     if (!(this instanceof ConsoleTracker)) return new ConsoleTracker(config);
-    this.config = config;
+    this.config = config || {};
     if (config.filters) {
       this.filters = config.filters;
       this._tracker = this._filterAndTrack.bind(this);

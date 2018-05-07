@@ -12,7 +12,10 @@ const eventTracker = new EventTracker.EventTracker({
   trackHashChanges: true,
   trackElementClicks: true,
   trackPageViews: true,
-  waitOnTracker: false
+  waitOnTracker: false,
+  postProcessors: [
+    function (event) { event.source.browser.foo = 'bar'; }
+  ]
 }, {
   context: {
     'organizationId': 'test-organization',

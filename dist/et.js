@@ -11763,7 +11763,8 @@ var EventTracker = function () {
         trackSubmissions: false,
         clickElementSelectors: ['a'],
         eventTypePrefix: 'browser',
-        eventTypeVersion: EVENT_TYPE_VERSION
+        eventTypeVersion: EVENT_TYPE_VERSION,
+        postProcessors: []
       }, this.options);
 
       this.rootEvent = (0, _lodash2.default)({
@@ -12046,8 +12047,13 @@ var EventTracker = function () {
         user: this.user,
         content: this.content
       }, this.rootEvent);
+      var merged = (0, _lodash2.default)(rootEvent, props);
 
-      return _miscUtil2.default.jsonify((0, _lodash2.default)(rootEvent, props));
+      this.options.postProcessors.map(function (fn) {
+        fn(merged);
+      });
+
+      return _miscUtil2.default.jsonify(merged);
     }
 
     /**

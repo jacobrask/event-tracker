@@ -77,7 +77,8 @@ export default class EventTracker {
       trackSubmissions: false,
       clickElementSelectors: ['a'],
       eventTypePrefix: 'browser',
-      eventTypeVersion: EVENT_TYPE_VERSION
+      eventTypeVersion: EVENT_TYPE_VERSION,
+      postProcessors: []
     }, this.options);
 
     this.rootEvent =
@@ -329,8 +330,13 @@ export default class EventTracker {
       user: this.user,
       content: this.content
     }, this.rootEvent);
+    const merged = merge(rootEvent, props);
 
-    return MiscUtil.jsonify(merge(rootEvent, props));
+    this.options.postProcessors.map(function (fn) {
+      fn(merged);
+    });
+
+    return MiscUtil.jsonify(merged);
   }
 
   /**

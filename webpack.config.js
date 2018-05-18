@@ -5,20 +5,20 @@ const UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 const path = require('path');
 const env = require('yargs').argv.env; // use --env with webpack 2
 
-let libraryName = 'Scribe';
-
+let libraryName = 'EventTracker';
+let libraryFilename = 'et';
 let plugins = [], outputFile;
 
 if (env === 'build') {
   plugins.push(new UglifyJsPlugin({ minimize: true }));
-  outputFile = libraryName + '.min.js';
+  outputFile = libraryFilename + '.min.js';
 } else {
-  outputFile = libraryName + '.js';
+  outputFile = libraryFilename + '.js';
 }
 
 const config = {
   entry: ['babel-polyfill', __dirname + '/src/index.js'],
-  devtool: 'source-map',
+  //devtool: 'source-map',
   output: {
     path: __dirname + '/dist',
     filename: outputFile,

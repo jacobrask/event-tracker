@@ -65,10 +65,10 @@ DomUtil.monitorElements = (selectors, onnew, refresh) => {
     for (i = 0; i < curElements.length; i++) {
       const el = curElements[i];
 
-      const scanned = el.getAttribute('scribe_scanned');
+      const scanned = el.getAttribute('event_tracker_scanned');
 
       if (!scanned) {
-        el.setAttribute('scribe_scanned', true);
+        el.setAttribute('event_tracker_scanned', true);
         try {
           onnew(el);
         } catch (e) {

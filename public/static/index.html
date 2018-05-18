@@ -8,8 +8,8 @@
   <meta name="description" content="Test page">
 
   <!--<link rel="stylesheet" href="css/styles.css?v=1.0">-->
-  <script src="../../dist/Scribe.js"></script>
-  <script src="main.js"></script>
+  <script src="../../dist/et.js"></script>
+  <script src="./main.js"></script>
 
 </head>
 
@@ -23,17 +23,23 @@
 <div>
   <a id="laddaom" href="./">Ladda om</a>
 </div>
+<div class="ad-placement">Text ad</div>
 
 <button onclick="track();">Track custom</button>
+<button onclick="filteredTrack();">Should be filtered</button>
 <button onclick="changeUser();">Change user</button>
 
 <script language="JavaScript">
   function track() {
-    scribe.track('customEvent', { content: { keywords: [ 'should', 'overwrite', 'initialized' ] } });
+    eventTracker.track('customEvent', { content: { keywords: [ 'should', 'overwrite', 'initialized' ] } });
+  }
+
+  function filteredTrack() {
+    eventTracker.track('customEvent', { content: { keywords: [ 'should', 'overwrite', 'initialized' ] }, source: { browser: { bot: true} } } );
   }
 
   function changeUser() {
-    scribe.setUser(
+    eventTracker.setUser(
     {
       'paywayId': '2b2222222222222222222222',
       'userId': '2b2222222222222222222222',

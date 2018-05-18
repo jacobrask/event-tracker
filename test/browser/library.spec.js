@@ -1,15 +1,15 @@
 /* global describe, it, expect */
-/* global Scribe */
+/* global EventTracker */
 
 let lib;
 
-describe('Given an instance of Scribe library', () => {
+describe('Given an instance of EventTracker library', () => {
   before(() => {
-    lib = new Scribe.Scribe();
+    lib = new EventTracker.EventTracker();
   });
-  describe('when I need the name', () => {
-    it('should return the name', () => {
-      expect(lib.name).to.be.equal('Cat');
+  describe('when initialized', () => {
+    it('should have a empty outbox', () => {
+      expect(lib.outbox.length).to.be.equal(0);
     });
   });
 });

@@ -7,18 +7,18 @@ import merge from 'lodash.merge';
 
 const EVENT_TYPE_VERSION = 1;
 /**
- * Constructs a new Scribe Analytics tracker.
+ * Constructs a new EventTracker Analytics tracker.
  *
- * @constructor Scribe
+ * @constructor EventTracker
  *
  * @param options.tracker   The tracker to use for tracking events.
  *                          Must be: function(collection, event).
  *
  */
 
-export default class Scribe {
+export default class EventTracker {
   constructor(options = {}, initialData = {}) {
-    if (!(this instanceof Scribe)) return new Scribe(options, initialData);
+    if (!(this instanceof EventTracker)) return new EventTracker(options, initialData);
 
     this.rootEvent = {};
     this.options = options;
@@ -39,8 +39,16 @@ export default class Scribe {
     return this.context;
   }
 
+  setContext(context) {
+    this.context = context;
+  }
+
   content() {
     return this.content;
+  }
+
+  setContent(content) {
+    this.content = content;
   }
 
   user() {
@@ -52,7 +60,7 @@ export default class Scribe {
   }
 
   /**
-   * Initializes Scribe. This is called internally by the constructor and does
+   * Initializes EventTracker. This is called internally by the constructor and does
    * not need to be called manually.
    */
   initialize() {
@@ -67,7 +75,10 @@ export default class Scribe {
       trackElementClicks: false,
       trackRedirects: false,
       trackSubmissions: false,
-      clickElementSelectors: ['a']
+      clickElementSelectors: ['a'],
+      eventTypePrefix: 'browser',
+      eventTypeVersion: EVENT_TYPE_VERSION,
+      postProcessors: []
     }, this.options);
 
     this.rootEvent =
@@ -125,6 +136,7 @@ export default class Scribe {
           const ancestors = DomUtil.getAncestors(e.target);
 
           // Do not track clicks on links, these are tracked separately!
+          // Beware, this should check if trackElementSelectors is true and if current element is in clickElementSelectors.
           if (!ArrayUtil.exists(ancestors, e => e.tagName === 'A')) {
             self.track('click', {
               eventCustomData: {
@@ -241,20 +253,20 @@ export default class Scribe {
   }
 
   _clearOutbox() {
-    MiscUtil.store.local.setItem('scribe_outbox', JSON.stringify([]));
+    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify([]));
   }
 
   _saveOutbox() {
     // Get all old message and append the new ones
-    const localStorageMessages = JSON.parse(MiscUtil.store.local.getItem('scribe_outbox') || '[]');
+    const localStorageMessages = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox') || '[]');
     const allMessages = localStorageMessages.concat(this.outbox);
 
-    MiscUtil.store.local.setItem('scribe_outbox', JSON.stringify(allMessages));
+    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify(allMessages));
     this.outbox = [];
   }
 
   _loadOutbox() {
-    this.outbox = JSON.parse(MiscUtil.store.local.getItem('scribe_outbox') || '[]');
+    this.outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox') || '[]');
   }
 
   _sendOutbox() {
@@ -265,14 +277,14 @@ export default class Scribe {
 
       // Specially modify redirect, formSubmit events to save the new URL,
       // because the URL is not known at the time of the event:
-      if (ArrayUtil.contains(['browser:redirect', 'browser:formSubmit'], event_type)) {
+      if (ArrayUtil.contains([`${this.options.eventTypePrefix}:redirect`, `${this.options.eventTypePrefix}:formSubmit`], event_type)) {
         message.value.eventCustomData = message.value.eventCustomData || {};
         message.value.eventCustomData.target = MiscUtil.jsonify(merge(message.value.eventCustomData.target || {}, { url: MiscUtil.parseUrl(document.location) }));
       }
 
       // If source and target urls are the same, change redirect events
       // to reload events:
-      if (event_type === 'browser:redirect') {
+      if (event_type === `${this.options.eventTypePrefix}:redirect`) {
         try {
           // See if it's a redirect (= different url) or reload (= same url):
           const sourceUrl = MiscUtil.unparseUrl(message.value.source.url);
@@ -280,7 +292,7 @@ export default class Scribe {
 
           if (sourceUrl === targetUrl) {
             // It's a reload:
-            message.value.type = 'browser:reload';
+            message.value.type = `${this.options.eventTypePrefix}:reload`;
           }
         } catch (e) {
           window.onerror && window.onerror(e);
@@ -308,24 +320,29 @@ export default class Scribe {
    * JSON objects that contains all event details.
    */
   _createEvent(name, props = {}) {
-    props.eventId = MiscUtil.genGuid();
-    props.eventTypeVersion = EVENT_TYPE_VERSION;
+    props.eventId = props.eventId || MiscUtil.genGuid();
+    props.eventTypeVersion = props.eventTypeVersion || this.options.eventTypeVersion;
     props.clientTimestamp = props.clientTimestamp || (new Date()).toISOString();
-    props.eventType = `browser:${name}`;
+    props.eventType = `${this.options.eventTypePrefix}:${name}`;
     props.source = merge(Env.getPageloadData(), props.source || {});
     const rootEvent = merge({
       context: this.context,
       user: this.user,
       content: this.content
     }, this.rootEvent);
+    const merged = merge(rootEvent, props);
 
-    return MiscUtil.jsonify(merge(rootEvent, props));
+    this.options.postProcessors.map(function (fn) {
+      fn(merged);
+    });
+
+    return MiscUtil.jsonify(merged);
   }
 
   /**
    * Tracks an event now.
    *
-   * @memberof Scribe
+   * @memberof EventTracker
    *
    * @param name        The name of the event, such as 'downloaded trial'.
    * @param props       An arbitrary JSON object describing properties of the event.
@@ -342,12 +359,12 @@ export default class Scribe {
 
   /**
    * Tracks an event later. The event will only be tracked if the user visits
-   * some page on the same domain that has Scribe Analytics installed.
+   * some page on the same domain that has EventTracker Analytics installed.
    *
    * This function is mainly useful when the user is leaving the page and
    * there is not enough time to capture some user behavior.
    *
-   * @memberof Scribe
+   * @memberof EventTracker
    *
    * @param name        The name of the event, such as 'downloaded trial'.
    * @param props       An arbitrary JSON object describing properties of the event.

@@ -1,4 +1,7 @@
-import Scribe from 'scribe';
+import EventTracker from 'eventTracker';
 import ConsoleTracker from 'tracker/consoleTracker';
 import HttpTracker from 'tracker/httpTracker';
-export { Scribe, ConsoleTracker, HttpTracker };
+import Filters from 'filters';
+import MiscUtil from 'miscUtil';
+export { EventTracker, ConsoleTracker, HttpTracker, MiscUtil, Filters };
+export default EventTracker;

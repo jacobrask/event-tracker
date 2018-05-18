@@ -8,8 +8,8 @@
   <meta name="description" content="Test page">
 
   <!--<link rel="stylesheet" href="css/styles.css?v=1.0">-->
-  <script src="../../dist/Scribe.js"></script>
-  <script src="main.js"></script>
+  <script src="../../dist/et.js"></script>
+  <script src="./main.js"></script>
 
 </head>
 
@@ -29,7 +29,7 @@
 <script language="JavaScript">
 
   var track = function() {
-    scribe.track('customEvent', { content: {keywords: [ 'should', 'overwrite', 'initialized' ] }, eventCustomData: { data: { foo: 'bar', baz: 'qux' }}});
+    eventTracker.track('customEvent', { content: {keywords: [ 'should', 'overwrite', 'initialized' ] }, eventCustomData: { data: { foo: 'bar', baz: 'qux' }}});
   }
 </script>
 </body>

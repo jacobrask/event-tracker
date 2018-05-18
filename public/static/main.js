@@ -1,10 +1,21 @@
-const scribe = new Scribe.Scribe({
-  tracker: new Scribe.ConsoleTracker({ 'url': 'http://localhost:8080/api/v1/events' }),
+/* global EventTracker */
+const eventTracker = new EventTracker.EventTracker({
+  tracker: new EventTracker.ConsoleTracker({
+    url: 'http://localhost:8080/api/v1/events',
+    filters: [
+      () => true,
+      //(event) => event.source.browser.bot !== true,
+      EventTracker.Filters.BotFilter
+    ]
+  }),
   trackClicks: false,
   trackHashChanges: true,
   trackElementClicks: true,
   trackPageViews: true,
-  waitOnTracker: false
+  waitOnTracker: false,
+  postProcessors: [
+    function (event) { event.source.browser.foo = 'bar'; }
+  ]
 }, {
   context: {
     'organizationId': 'test-organization',
@@ -40,3 +51,4 @@ const scribe = new Scribe.Scribe({
     ]
   }
 });
+

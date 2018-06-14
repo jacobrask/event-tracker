@@ -70,6 +70,7 @@ export default class EventTracker {
       waitOnTracker: false,
       trackPageViews: false,
       trackClicks: false,
+      trackActiveTime: false,
       trackHashChanges: false,
       trackEngagement: false,
       trackElementClicks: false,
@@ -247,6 +248,35 @@ export default class EventTracker {
     }
     // Track form abandonments:
 
+    // Track active time
+    if (this.options.trackActiveTime) {
+      const trackTime = {
+        trackIndex: null,
+        secondsActive: 0,
+        lastActive: null,
+        updateTime: function () {
+          if (this.lastActive !== null && (Date.now() - this.lastActive) / 1000 < 5) {
+            this.secondsActive = this.secondsActive + 1;
+            this.trackIndex = self.trackLater('activetime', {
+              eventCustomData: {
+                activetime: {
+                  secondsActive: this.secondsActive
+                }
+              }
+            }, this.trackIndex);
+          }
+        },
+        updateActive: function () {
+          this.lastActive = Date.now();
+        }
+      };
+
+      document.onmousemove = trackTime.updateActive.bind(trackTime);
+      document.onkeydown = trackTime.updateActive.bind(trackTime);
+      document.onscroll = trackTime.updateActive.bind(trackTime);
+      setInterval(trackTime.updateTime.bind(trackTime), 1000);
+    }
+
     // Load and send any pending events:
     this._loadOutbox();
     this._sendOutbox();
@@ -257,12 +287,7 @@ export default class EventTracker {
   }
 
   _saveOutbox() {
-    // Get all old message and append the new ones
-    const localStorageMessages = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox') || '[]');
-    const allMessages = localStorageMessages.concat(this.outbox);
-
-    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify(allMessages));
-    this.outbox = [];
+    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify(this.outbox));
   }
 
   _loadOutbox() {
@@ -371,7 +396,7 @@ export default class EventTracker {
    *
    */
   trackLater(name, props, index) {
-    if (index === undefined) {
+    if (index === undefined || index === null) {
       this.outbox.push({ value: this._createEvent(name, props) });
       index = this.outbox.length - 1;
     } else {

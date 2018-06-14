@@ -9,6 +9,7 @@ const eventTracker = new EventTracker.EventTracker({
     ]
   }),
   trackClicks: false,
+  trackActiveTime: true,
   trackHashChanges: true,
   trackElementClicks: true,
   trackPageViews: true,

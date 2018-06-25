@@ -85,7 +85,8 @@ export default class EventTracker {
     this.rootEvent =
     merge({
       sessionId: Env.getSessionId(),
-      clientId: Env.getClientId()
+      clientId: Env.getClientId(),
+      rootEventId: MiscUtil.genGuid()
     }, this.rootEvent);
 
     // Always assume that Javascript is the culprit of leaving the page
@@ -274,30 +275,62 @@ export default class EventTracker {
       document.onmousemove = trackTime.updateActive.bind(trackTime);
       document.onkeydown = trackTime.updateActive.bind(trackTime);
       document.onscroll = trackTime.updateActive.bind(trackTime);
-      setInterval(trackTime.updateTime.bind(trackTime), 1000);
+      setInterval(trackTime.updateTime.bind(trackTime), 5000);
     }
 
+    this.outbox = [];
+
     // Load and send any pending events:
-    this._loadOutbox();
-    this._sendOutbox();
+    this._sendOutboxes();
+
+    // Mark outbox as done on unload
+    window.addEventListener('unload', (event) => {
+      this._finishOutbox();
+    });
   }
 
-  _clearOutbox() {
-    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify([]));
-  }
+  _finishOutbox() {
+    let outboxes = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outboxes') || '{}');
 
+    outboxes[this.rootEvent.rootEventId] = { finished: true, datetime: Date.now() };
+    MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
+  }
   _saveOutbox() {
-    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify(this.outbox));
+    MiscUtil.store.local.setItem('event_tracker_outbox_' + this.rootEvent.rootEventId, JSON.stringify(this.outbox));
+    let outboxes = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outboxes') || '{}');
+
+    outboxes[this.rootEvent.rootEventId] = { finished: false, datetime: Date.now() };
+    MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
+  }
+  _sendOutboxes() {
+    let outboxes = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outboxes') || '{}');
+
+    outboxes = Object.entries(outboxes).filter(([rootEventId, value], index, arr) => {
+      if (value.finished === true) {
+        let outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox_' + rootEventId) || '{}');
+
+        this._sendOutbox(outbox);
+        MiscUtil.store.local.removeItem('event_tracker_outbox_' + rootEventId);
+        return false;
+      }
+
+      if (Date.now() - value.datetime > 24 * 60 * 60 * 1000) {
+        let outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox_' + rootEventId) || '{}');
+
+        this._sendOutbox(outbox);
+        MiscUtil.store.local.removeItem('event_tracker_outbox_' + rootEventId);
+        return false;
+      }
+      return true;
+    });
+
+    MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
   }
 
-  _loadOutbox() {
-    this.outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox') || '[]');
-  }
-
-  _sendOutbox() {
+  _sendOutbox(outbox) {
     const messages = [];
 
-    for (const message of this.outbox) {
+    for (const message of outbox) {
       const event_type = message.value.type;
 
       // Specially modify redirect, formSubmit events to save the new URL,
@@ -335,8 +368,6 @@ export default class EventTracker {
         window.onerror && window.onerror(e);
       }
     }
-    this.outbox = [];
-    this._clearOutbox();
   }
 
   /**
@@ -396,6 +427,7 @@ export default class EventTracker {
    *
    */
   trackLater(name, props, index) {
+
     if (index === undefined || index === null) {
       this.outbox.push({ value: this._createEvent(name, props) });
       index = this.outbox.length - 1;

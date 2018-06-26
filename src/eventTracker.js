@@ -275,18 +275,24 @@ export default class EventTracker {
       document.onmousemove = trackTime.updateActive.bind(trackTime);
       document.onkeydown = trackTime.updateActive.bind(trackTime);
       document.onscroll = trackTime.updateActive.bind(trackTime);
-      setInterval(trackTime.updateTime.bind(trackTime), 5000);
+      setInterval(trackTime.updateTime.bind(trackTime), 1000);
     }
 
     this.outbox = [];
 
-    // Load and send any pending events:
-    this._sendOutboxes();
+    if (!navigator.sendBeacon) {
+      // Load and send any pending events:
+      this._sendOutboxes();
 
-    // Mark outbox as done on unload
-    window.addEventListener('unload', (event) => {
-      this._finishOutbox();
-    });
+      // Mark outbox as done on unload
+      window.addEventListener('unload', (event) => {
+        this._finishOutbox();
+      });
+    } else {
+      window.addEventListener('unload', (event) => {
+        this._sendOutbox(this.outbox);
+      });
+    }
   }
 
   _finishOutbox() {
@@ -336,18 +342,18 @@ export default class EventTracker {
     const messages = [];
 
     for (const message of outbox) {
-      const event_type = message.value.eventType;
+      const eventType = message.value.eventType;
 
       // Specially modify redirect, formSubmit events to save the new URL,
       // because the URL is not known at the time of the event:
-      if (ArrayUtil.contains([`${this.options.eventTypePrefix}:redirect`, `${this.options.eventTypePrefix}:formSubmit`], event_type)) {
+      if (ArrayUtil.contains([`${this.options.eventTypePrefix}:redirect`, `${this.options.eventTypePrefix}:formSubmit`], eventType)) {
         message.value.eventCustomData = message.value.eventCustomData || {};
         message.value.eventCustomData.target = MiscUtil.jsonify(merge(message.value.eventCustomData.target || {}, { url: MiscUtil.parseUrl(document.location) }));
       }
 
       // If source and target urls are the same, change redirect events
       // to reload events:
-      if (event_type === `${this.options.eventTypePrefix}:redirect`) {
+      if (eventType === `${this.options.eventTypePrefix}:redirect`) {
         try {
           // See if it's a redirect (= different url) or reload (= same url):
           const sourceUrl = MiscUtil.unparseUrl(message.value.source.url);
@@ -355,7 +361,7 @@ export default class EventTracker {
 
           if (sourceUrl === targetUrl) {
             // It's a reload:
-            message.value.type = `${this.options.eventTypePrefix}:reload`;
+            message.value.eventType = `${this.options.eventTypePrefix}:reload`;
           }
         } catch (e) {
           window.onerror && window.onerror(e);
@@ -439,8 +445,9 @@ export default class EventTracker {
     } else {
       this.outbox[index] = { value: this._createEvent(name, props) };
     }
-
-    this._saveOutbox();
+    if (!navigator.sendBeacon) {
+      this._saveOutbox();
+    }
     return index;
   }
 

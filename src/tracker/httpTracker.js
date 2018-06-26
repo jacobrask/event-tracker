@@ -21,12 +21,20 @@ export default class HttpTracker {
   _track(info) {
     const xhr = new XMLHttpRequest();
 
-    xhr.open('POST', this.url);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.withCredentials = true;
-    xhr.onload = info.success;
-    xhr.onerror = info.failure;
-    xhr.send(JSON.stringify(info.value));
+    if (!navigator.sendBeacon) {
+      xhr.open('POST', this.url);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.withCredentials = true;
+      xhr.onload = info.success;
+      xhr.onerror = info.failure;
+      xhr.send(JSON.stringify(info.value));
+    } else {
+      if (navigator.sendBeacon(this.url, JSON.stringify(info.value))) {
+        typeof info.success === 'function' && info.success(null, null);
+      } else {
+        typeof info.failure === 'function' && info.failure(null, null);
+      }
+    }
   }
 
   _filterAndTrack(info) {

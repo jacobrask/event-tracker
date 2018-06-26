@@ -11979,18 +11979,24 @@ var EventTracker = function () {
         document.onmousemove = trackTime.updateActive.bind(trackTime);
         document.onkeydown = trackTime.updateActive.bind(trackTime);
         document.onscroll = trackTime.updateActive.bind(trackTime);
-        setInterval(trackTime.updateTime.bind(trackTime), 5000);
+        setInterval(trackTime.updateTime.bind(trackTime), 1000);
       }
 
       this.outbox = [];
 
-      // Load and send any pending events:
-      this._sendOutboxes();
+      if (!navigator.sendBeacon) {
+        // Load and send any pending events:
+        this._sendOutboxes();
 
-      // Mark outbox as done on unload
-      window.addEventListener('unload', function (event) {
-        _this._finishOutbox();
-      });
+        // Mark outbox as done on unload
+        window.addEventListener('unload', function (event) {
+          _this._finishOutbox();
+        });
+      } else {
+        window.addEventListener('unload', function (event) {
+          _this._sendOutbox(_this.outbox);
+        });
+      }
     }
   }, {
     key: '_finishOutbox',
@@ -12061,18 +12067,18 @@ var EventTracker = function () {
         for (var _iterator = outbox[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var message = _step.value;
 
-          var event_type = message.value.eventType;
+          var eventType = message.value.eventType;
 
           // Specially modify redirect, formSubmit events to save the new URL,
           // because the URL is not known at the time of the event:
-          if (_arrayUtil2.default.contains([this.options.eventTypePrefix + ':redirect', this.options.eventTypePrefix + ':formSubmit'], event_type)) {
+          if (_arrayUtil2.default.contains([this.options.eventTypePrefix + ':redirect', this.options.eventTypePrefix + ':formSubmit'], eventType)) {
             message.value.eventCustomData = message.value.eventCustomData || {};
             message.value.eventCustomData.target = _miscUtil2.default.jsonify((0, _lodash2.default)(message.value.eventCustomData.target || {}, { url: _miscUtil2.default.parseUrl(document.location) }));
           }
 
           // If source and target urls are the same, change redirect events
           // to reload events:
-          if (event_type === this.options.eventTypePrefix + ':redirect') {
+          if (eventType === this.options.eventTypePrefix + ':redirect') {
             try {
               // See if it's a redirect (= different url) or reload (= same url):
               var sourceUrl = _miscUtil2.default.unparseUrl(message.value.source.url);
@@ -12080,7 +12086,7 @@ var EventTracker = function () {
 
               if (sourceUrl === targetUrl) {
                 // It's a reload:
-                message.value.type = this.options.eventTypePrefix + ':reload';
+                message.value.eventType = this.options.eventTypePrefix + ':reload';
               }
             } catch (e) {
               window.onerror && window.onerror(e);
@@ -12189,8 +12195,9 @@ var EventTracker = function () {
       } else {
         this.outbox[index] = { value: this._createEvent(name, props) };
       }
-
-      this._saveOutbox();
+      if (!navigator.sendBeacon) {
+        this._saveOutbox();
+      }
       return index;
     }
 
@@ -15321,12 +15328,20 @@ var HttpTracker = function () {
     value: function _track(info) {
       var xhr = new XMLHttpRequest();
 
-      xhr.open('POST', this.url);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.withCredentials = true;
-      xhr.onload = info.success;
-      xhr.onerror = info.failure;
-      xhr.send(JSON.stringify(info.value));
+      if (!navigator.sendBeacon) {
+        xhr.open('POST', this.url);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.withCredentials = true;
+        xhr.onload = info.success;
+        xhr.onerror = info.failure;
+        xhr.send(JSON.stringify(info.value));
+      } else {
+        if (navigator.sendBeacon(this.url, JSON.stringify(info.value))) {
+          typeof info.success === 'function' && info.success(null, null);
+        } else {
+          typeof info.failure === 'function' && info.failure(null, null);
+        }
+      }
     }
   }, {
     key: '_filterAndTrack',

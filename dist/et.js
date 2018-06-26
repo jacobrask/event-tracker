@@ -1502,6 +1502,9 @@ MiscHelper.store = {
   getItem: function getItem(storage, key) {
     return storage.getItem(key);
   },
+  removeItem: function removeItem(storage, key) {
+    return storage.removeItem(key);
+  },
   setItem: function setItem(storage, key, value) {
     try {
       return storage.setItem(key, value);
@@ -1515,6 +1518,9 @@ MiscHelper.store = {
     getItem: function getItem(key) {
       return MiscHelper.store.getItem(window.sessionStorage, key);
     },
+    removeItem: function removeItem(key) {
+      return MiscHelper.store.removeItem(window.sessionStorage, key);
+    },
     setItem: function setItem(key, value) {
       return MiscHelper.store.setItem(sessionStorage, key, value);
     }
@@ -1522,6 +1528,9 @@ MiscHelper.store = {
   local: {
     getItem: function getItem(key) {
       return MiscHelper.store.getItem(window.localStorage, key);
+    },
+    removeItem: function removeItem(key) {
+      return MiscHelper.store.removeItem(window.localStorage, key);
     },
     setItem: function setItem(key, value) {
       return MiscHelper.store.setItem(localStorage, key, value);
@@ -11645,6 +11654,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _miscUtil = __webpack_require__(49);
@@ -11672,6 +11683,10 @@ var _lodash = __webpack_require__(126);
 var _lodash2 = _interopRequireDefault(_lodash);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -11750,6 +11765,8 @@ var EventTracker = function () {
   }, {
     key: 'initialize',
     value: function initialize() {
+      var _this = this;
+
       var self = this;
 
       this.options = (0, _lodash2.default)({
@@ -11770,7 +11787,8 @@ var EventTracker = function () {
 
       this.rootEvent = (0, _lodash2.default)({
         sessionId: _env2.default.getSessionId(),
-        clientId: _env2.default.getClientId()
+        clientId: _env2.default.getClientId(),
+        rootEventId: _miscUtil2.default.genGuid()
       }, this.rootEvent);
 
       // Always assume that Javascript is the culprit of leaving the page
@@ -11961,31 +11979,78 @@ var EventTracker = function () {
         document.onmousemove = trackTime.updateActive.bind(trackTime);
         document.onkeydown = trackTime.updateActive.bind(trackTime);
         document.onscroll = trackTime.updateActive.bind(trackTime);
-        setInterval(trackTime.updateTime.bind(trackTime), 1000);
+        setInterval(trackTime.updateTime.bind(trackTime), 5000);
       }
 
+      this.outbox = [];
+
       // Load and send any pending events:
-      this._loadOutbox();
-      this._sendOutbox();
+      this._sendOutboxes();
+
+      // Mark outbox as done on unload
+      window.addEventListener('unload', function (event) {
+        _this._finishOutbox();
+      });
     }
   }, {
-    key: '_clearOutbox',
-    value: function _clearOutbox() {
-      _miscUtil2.default.store.local.setItem('event_tracker_outbox', JSON.stringify([]));
+    key: '_finishOutbox',
+    value: function _finishOutbox() {
+      var outboxes = JSON.parse(_miscUtil2.default.store.local.getItem('event_tracker_outboxes') || '{}');
+
+      outboxes[this.rootEvent.rootEventId] = { finished: true, datetime: Date.now() };
+      _miscUtil2.default.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
     }
   }, {
     key: '_saveOutbox',
     value: function _saveOutbox() {
-      _miscUtil2.default.store.local.setItem('event_tracker_outbox', JSON.stringify(this.outbox));
+      _miscUtil2.default.store.local.setItem('event_tracker_outbox_' + this.rootEvent.rootEventId, JSON.stringify(this.outbox));
+      var outboxes = JSON.parse(_miscUtil2.default.store.local.getItem('event_tracker_outboxes') || '{}');
+
+      outboxes[this.rootEvent.rootEventId] = { finished: false, datetime: Date.now() };
+      _miscUtil2.default.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
     }
   }, {
-    key: '_loadOutbox',
-    value: function _loadOutbox() {
-      this.outbox = JSON.parse(_miscUtil2.default.store.local.getItem('event_tracker_outbox') || '[]');
+    key: '_sendOutboxes',
+    value: function _sendOutboxes() {
+      var _this2 = this;
+
+      var outboxes = JSON.parse(_miscUtil2.default.store.local.getItem('event_tracker_outboxes') || '{}');
+
+      outboxes = Object.entries(outboxes).filter(function (_ref, index, arr) {
+        var _ref2 = _slicedToArray(_ref, 2),
+            rootEventId = _ref2[0],
+            value = _ref2[1];
+
+        if (value.finished === true) {
+          var outbox = JSON.parse(_miscUtil2.default.store.local.getItem('event_tracker_outbox_' + rootEventId) || '[]');
+
+          _this2._sendOutbox(outbox);
+          _miscUtil2.default.store.local.removeItem('event_tracker_outbox_' + rootEventId);
+          return false;
+        }
+
+        if (Date.now() - value.datetime > 24 * 60 * 60 * 1000) {
+          var _outbox = JSON.parse(_miscUtil2.default.store.local.getItem('event_tracker_outbox_' + rootEventId) || '[]');
+
+          _this2._sendOutbox(_outbox);
+          _miscUtil2.default.store.local.removeItem('event_tracker_outbox_' + rootEventId);
+          return false;
+        }
+        return true;
+      });
+
+      if (outboxes !== undefined && outboxes.length > 0) {
+        outboxes = Object.assign.apply(Object, _toConsumableArray(outboxes.map(function (d) {
+          return _defineProperty({}, d[0], d[1]);
+        })));
+        _miscUtil2.default.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
+      } else {
+        _miscUtil2.default.store.local.setItem('event_tracker_outboxes', JSON.stringify({}));
+      }
     }
   }, {
     key: '_sendOutbox',
-    value: function _sendOutbox() {
+    value: function _sendOutbox(outbox) {
       var messages = [];
 
       var _iteratorNormalCompletion = true;
@@ -11993,10 +12058,10 @@ var EventTracker = function () {
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = this.outbox[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = outbox[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var message = _step.value;
 
-          var event_type = message.value.type;
+          var event_type = message.value.eventType;
 
           // Specially modify redirect, formSubmit events to save the new URL,
           // because the URL is not known at the time of the event:
@@ -12047,8 +12112,6 @@ var EventTracker = function () {
           window.onerror && window.onerror(e);
         }
       }
-      this.outbox = [];
-      this._clearOutbox();
     }
 
     /**
@@ -12119,6 +12182,7 @@ var EventTracker = function () {
   }, {
     key: 'trackLater',
     value: function trackLater(name, props, index) {
+
       if (index === undefined || index === null) {
         this.outbox.push({ value: this._createEvent(name, props) });
         index = this.outbox.length - 1;

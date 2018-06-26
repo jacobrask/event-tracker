@@ -307,7 +307,7 @@ export default class EventTracker {
 
     outboxes = Object.entries(outboxes).filter(([rootEventId, value], index, arr) => {
       if (value.finished === true) {
-        let outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox_' + rootEventId) || '{}');
+        let outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox_' + rootEventId) || '[]');
 
         this._sendOutbox(outbox);
         MiscUtil.store.local.removeItem('event_tracker_outbox_' + rootEventId);
@@ -315,7 +315,7 @@ export default class EventTracker {
       }
 
       if (Date.now() - value.datetime > 24 * 60 * 60 * 1000) {
-        let outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox_' + rootEventId) || '{}');
+        let outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox_' + rootEventId) || '[]');
 
         this._sendOutbox(outbox);
         MiscUtil.store.local.removeItem('event_tracker_outbox_' + rootEventId);
@@ -324,14 +324,19 @@ export default class EventTracker {
       return true;
     });
 
-    MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
+    if (outboxes !== undefined && outboxes.length > 0) {
+      outboxes = Object.assign(...outboxes.map(d => ({ [d[0]]: d[1] })));
+      MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
+    } else {
+      MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify({}));
+    }
   }
 
   _sendOutbox(outbox) {
     const messages = [];
 
     for (const message of outbox) {
-      const event_type = message.value.type;
+      const event_type = message.value.eventType;
 
       // Specially modify redirect, formSubmit events to save the new URL,
       // because the URL is not known at the time of the event:

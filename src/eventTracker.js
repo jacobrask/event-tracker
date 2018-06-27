@@ -70,6 +70,7 @@ export default class EventTracker {
       waitOnTracker: false,
       trackPageViews: false,
       trackClicks: false,
+      trackActiveTime: false,
       trackHashChanges: false,
       trackEngagement: false,
       trackElementClicks: false,
@@ -84,7 +85,8 @@ export default class EventTracker {
     this.rootEvent =
     merge({
       sessionId: Env.getSessionId(),
-      clientId: Env.getClientId()
+      clientId: Env.getClientId(),
+      rootEventId: MiscUtil.genGuid()
     }, this.rootEvent);
 
     // Always assume that Javascript is the culprit of leaving the page
@@ -247,44 +249,111 @@ export default class EventTracker {
     }
     // Track form abandonments:
 
-    // Load and send any pending events:
-    this._loadOutbox();
-    this._sendOutbox();
-  }
+    // Track active time
+    if (this.options.trackActiveTime) {
+      const trackTime = {
+        trackIndex: null,
+        secondsActive: 0,
+        lastActive: null,
+        updateTime: function () {
+          if (this.lastActive !== null && (Date.now() - this.lastActive) / 1000 < 5) {
+            this.secondsActive = this.secondsActive + 1;
+            this.trackIndex = self.trackLater('activetime', {
+              eventCustomData: {
+                activetime: {
+                  secondsActive: this.secondsActive
+                }
+              }
+            }, this.trackIndex);
+          }
+        },
+        updateActive: function () {
+          this.lastActive = Date.now();
+        }
+      };
 
-  _clearOutbox() {
-    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify([]));
-  }
+      document.onmousemove = trackTime.updateActive.bind(trackTime);
+      document.onkeydown = trackTime.updateActive.bind(trackTime);
+      document.onscroll = trackTime.updateActive.bind(trackTime);
+      setInterval(trackTime.updateTime.bind(trackTime), 1000);
+    }
 
-  _saveOutbox() {
-    // Get all old message and append the new ones
-    const localStorageMessages = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox') || '[]');
-    const allMessages = localStorageMessages.concat(this.outbox);
-
-    MiscUtil.store.local.setItem('event_tracker_outbox', JSON.stringify(allMessages));
     this.outbox = [];
+
+    if (!navigator.sendBeacon) {
+      // Load and send any pending events:
+      this._sendOutboxes();
+
+      // Mark outbox as done on unload
+      window.addEventListener('unload', (event) => {
+        this._finishOutbox();
+      });
+    } else {
+      window.addEventListener('unload', (event) => {
+        this._sendOutbox(this.outbox);
+      });
+    }
   }
 
-  _loadOutbox() {
-    this.outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox') || '[]');
+  _finishOutbox() {
+    let outboxes = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outboxes') || '{}');
+
+    outboxes[this.rootEvent.rootEventId] = { finished: true, datetime: Date.now() };
+    MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
+  }
+  _saveOutbox() {
+    MiscUtil.store.local.setItem('event_tracker_outbox_' + this.rootEvent.rootEventId, JSON.stringify(this.outbox));
+    let outboxes = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outboxes') || '{}');
+
+    outboxes[this.rootEvent.rootEventId] = { finished: false, datetime: Date.now() };
+    MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
+  }
+  _sendOutboxes() {
+    let outboxes = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outboxes') || '{}');
+
+    outboxes = Object.entries(outboxes).filter(([rootEventId, value], index, arr) => {
+      if (value.finished === true) {
+        let outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox_' + rootEventId) || '[]');
+
+        this._sendOutbox(outbox);
+        MiscUtil.store.local.removeItem('event_tracker_outbox_' + rootEventId);
+        return false;
+      }
+
+      if (Date.now() - value.datetime > 24 * 60 * 60 * 1000) {
+        let outbox = JSON.parse(MiscUtil.store.local.getItem('event_tracker_outbox_' + rootEventId) || '[]');
+
+        this._sendOutbox(outbox);
+        MiscUtil.store.local.removeItem('event_tracker_outbox_' + rootEventId);
+        return false;
+      }
+      return true;
+    });
+
+    if (outboxes !== undefined && outboxes.length > 0) {
+      outboxes = Object.assign(...outboxes.map(d => ({ [d[0]]: d[1] })));
+      MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify(outboxes));
+    } else {
+      MiscUtil.store.local.setItem('event_tracker_outboxes', JSON.stringify({}));
+    }
   }
 
-  _sendOutbox() {
+  _sendOutbox(outbox) {
     const messages = [];
 
-    for (const message of this.outbox) {
-      const event_type = message.value.type;
+    for (const message of outbox) {
+      const eventType = message.value.eventType;
 
       // Specially modify redirect, formSubmit events to save the new URL,
       // because the URL is not known at the time of the event:
-      if (ArrayUtil.contains([`${this.options.eventTypePrefix}:redirect`, `${this.options.eventTypePrefix}:formSubmit`], event_type)) {
+      if (ArrayUtil.contains([`${this.options.eventTypePrefix}:redirect`, `${this.options.eventTypePrefix}:formSubmit`], eventType)) {
         message.value.eventCustomData = message.value.eventCustomData || {};
         message.value.eventCustomData.target = MiscUtil.jsonify(merge(message.value.eventCustomData.target || {}, { url: MiscUtil.parseUrl(document.location) }));
       }
 
       // If source and target urls are the same, change redirect events
       // to reload events:
-      if (event_type === `${this.options.eventTypePrefix}:redirect`) {
+      if (eventType === `${this.options.eventTypePrefix}:redirect`) {
         try {
           // See if it's a redirect (= different url) or reload (= same url):
           const sourceUrl = MiscUtil.unparseUrl(message.value.source.url);
@@ -292,7 +361,7 @@ export default class EventTracker {
 
           if (sourceUrl === targetUrl) {
             // It's a reload:
-            message.value.type = `${this.options.eventTypePrefix}:reload`;
+            message.value.eventType = `${this.options.eventTypePrefix}:reload`;
           }
         } catch (e) {
           window.onerror && window.onerror(e);
@@ -310,8 +379,6 @@ export default class EventTracker {
         window.onerror && window.onerror(e);
       }
     }
-    this.outbox = [];
-    this._clearOutbox();
   }
 
   /**
@@ -371,14 +438,16 @@ export default class EventTracker {
    *
    */
   trackLater(name, props, index) {
-    if (index === undefined) {
+
+    if (index === undefined || index === null) {
       this.outbox.push({ value: this._createEvent(name, props) });
       index = this.outbox.length - 1;
     } else {
       this.outbox[index] = { value: this._createEvent(name, props) };
     }
-
-    this._saveOutbox();
+    if (!navigator.sendBeacon) {
+      this._saveOutbox();
+    }
     return index;
   }
 

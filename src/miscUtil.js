@@ -6,6 +6,9 @@ MiscHelper.store = {
   getItem(storage, key) {
     return storage.getItem(key);
   },
+  removeItem(storage, key) {
+    return storage.removeItem(key);
+  },
   setItem(storage, key, value) {
     try {
       return storage.setItem(key, value);
@@ -19,10 +22,12 @@ MiscHelper.store = {
   },
   session: {
     getItem(key) { return MiscHelper.store.getItem(window.sessionStorage, key); },
+    removeItem(key) { return MiscHelper.store.removeItem(window.sessionStorage, key); },
     setItem(key, value) { return MiscHelper.store.setItem(sessionStorage, key, value); }
   },
   local: {
     getItem(key) { return MiscHelper.store.getItem(window.localStorage, key); },
+    removeItem(key) { return MiscHelper.store.removeItem(window.localStorage, key); },
     setItem(key, value) { return MiscHelper.store.setItem(localStorage, key, value); }
   }
 };

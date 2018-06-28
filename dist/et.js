@@ -11976,9 +11976,9 @@ var EventTracker = function () {
           }
         };
 
-        document.onmousemove = trackTime.updateActive.bind(trackTime);
-        document.onkeydown = trackTime.updateActive.bind(trackTime);
-        document.onscroll = trackTime.updateActive.bind(trackTime);
+        document.addEventListener('mousemove', trackTime.updateActive.bind(trackTime));
+        document.addEventListener('keydown', trackTime.updateActive.bind(trackTime));
+        document.addEventListener('scroll', trackTime.updateActive.bind(trackTime));
         setInterval(trackTime.updateTime.bind(trackTime), 1000);
       }
 

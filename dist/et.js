@@ -15328,20 +15328,19 @@ var HttpTracker = function () {
     value: function _track(info) {
       var xhr = new XMLHttpRequest();
 
-      if (!navigator.sendBeacon) {
-        xhr.open('POST', this.url);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.withCredentials = true;
-        xhr.onload = info.success;
-        xhr.onerror = info.failure;
-        xhr.send(JSON.stringify(info.value));
-      } else {
+      if (navigator.sendBeacon) {
         if (navigator.sendBeacon(this.url, JSON.stringify(info.value))) {
           typeof info.success === 'function' && info.success(null, null);
-        } else {
-          typeof info.failure === 'function' && info.failure(null, null);
+          return;
         }
       }
+
+      xhr.open('POST', this.url, false);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.withCredentials = true;
+      xhr.onload = info.success;
+      xhr.onerror = info.failure;
+      xhr.send(JSON.stringify(info.value));
     }
   }, {
     key: '_filterAndTrack',

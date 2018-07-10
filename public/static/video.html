@@ -1,0 +1,124 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Test events</title>
+  <meta name="description" content="Test page">
+
+  <!--<link rel="stylesheet" href="css/styles.css?v=1.0">-->
+  <script src="../../dist/et.js"></script>
+  <script src="./main.js"></script>
+
+</head>
+
+<body>
+
+<h1>Test events</h1>
+
+<div>
+  <a id="gotost" href="./">Go to index</a>
+</div>
+<div>
+  <a id="laddaom" href="./video.html">Ladda om</a>
+</div>
+
+<button onclick="track();">Track custom</button>
+<div>
+  <iframe id="iframe1" frameborder="0" scrolling="0" height="360" width="640"
+          src="./embed1.html"
+          allowfullscreen="true"></iframe>
+</div>
+<div>
+  <iframe id="iframe2" frameborder="0" scrolling="0" height="360" width="640"
+          src="./embed2.html"
+          allowfullscreen="true"></iframe>
+</div>
+
+<script language="JavaScript">
+  class VideoTracker {
+    constructor(iframe) {
+      this.secondsPlay = 0;
+      this.index = null;
+      this.iframe = iframe;
+      this.origin = "*";
+      this.statusTimer = null;
+      this.statusUpdateInterval = 1000;
+
+      window.addEventListener(
+        "message",
+        this.receiveMessage.bind(this),
+        false
+      );
+    }
+
+    startStatusTimer() {
+      this.statusTimer = window.setInterval((e) => {
+        this.requestStatusUpdate();
+      }, this.statusUpdateInterval);
+    }
+
+    stopStatusTimer() {
+      window.clearInterval(this.statusTimer);
+      this.statusTimer = null;
+    }
+
+    requestStatusUpdate() {
+      this.sendMessage(this.iframe, "playing");
+    }
+
+    sendMessage(iframe, func, args) {
+      const payload = {
+        "event": "message",
+        "func": func
+      };
+      const message = JSON.stringify(payload);
+      iframe.contentWindow.postMessage(
+        message, this.origin
+      );
+    }
+
+    receiveMessage(event) {
+      if (event.source.frameElement !== this.iframe) {
+        return;
+      }
+      const data = JSON.parse(event.data);
+      switch (data.func) {
+        case "playing":
+          if(data.args ===true) {
+            this.track({
+              playing: true,
+              src: data.src,
+            });
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
+    track(data) {
+      this.secondsPlay += 1;
+      console.log("Played: " + this.secondsPlay + ", src:" + data.src);
+      this.index = eventTracker.trackLater('playtime', {
+        eventCustomData: {
+          playtime: {
+            secondsPlay: this.secondsPlay,
+            src: data.src,
+          }
+        }
+      }, this.index);
+    }
+  }
+
+  (function () {
+    document.querySelectorAll('iframe').forEach((iframe) => {
+      new VideoTracker(iframe)
+    });
+  })();
+
+
+</script>
+</body>
+</html>

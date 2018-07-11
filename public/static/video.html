@@ -40,9 +40,7 @@
   class VideoTracker {
     constructor(iframe) {
       this.secondsPlay = 0;
-      this.title = null;
-      this.tags = null;
-      this.categories = null;
+      this.metaData = null;
 
       this.index = null;
       this.iframe = iframe;
@@ -90,7 +88,7 @@
       const data = JSON.parse(event.data);
       switch (data.func) {
         case "playing":
-          if(data.args ===true) {
+          if(data.args === true) {
             this.track();
           }
           break;

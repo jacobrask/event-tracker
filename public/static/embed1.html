@@ -1,83 +1,16 @@
 <!doctype html>
 
 <html lang="en">
-
+<head>
+  <script src="./videoEventProxy.js"></script>
+</head>
 <body>
 
 <iframe id="iframe1" frameborder="0" scrolling="0" height="360" width="640"
-        src="https://play.solidtango.com/widgets/embed/sfkudcql?auto_play=false&api=true"
+        src="https://mittmedia.solidtango.com/widgets/embed/j5iu6c34?auto_play=false&api=true"
         allowfullscreen="true"></iframe>
 <script>
-  class VideoEventProxy {
-    constructor(iframe) {
-      this.iframe = iframe;
-      this.originUp = "*";
-      this.originDown = "https://play.solidtango.com";
-      this.statusTimer = null;
-      this.statusUpdateInterval = 1000;
-
-      window.addEventListener(
-        "message",
-        this.receiveMessageDown.bind(this),
-        false
-      );
-
-      this.startStatusTimer();
-    }
-
-    startStatusTimer() {
-      this.statusTimer = window.setInterval((e) => {
-        this.requestStatusUpdate();
-      }, this.statusUpdateInterval);
-    }
-
-    stopStatusTimer() {
-      window.clearInterval(this.statusTimer);
-      this.statusTimer = null;
-    }
-
-    requestStatusUpdate() {
-      this.sendMessageDown(this.iframe, "playing");
-    }
-
-    sendMessageDown(iframe, func) {
-      const payload = {
-        "event": "message",
-        "func": func
-      };
-      const message = JSON.stringify(payload);
-      iframe.contentWindow.postMessage(
-        message, this.originDown
-      );
-    }
-
-    sendMessageUp(func, args) {
-      const payload = {
-        "event": "message",
-        "func": func,
-        "args": args,
-        "src": this.iframe.src,
-      };
-      const message = JSON.stringify(payload);
-      window.parent.postMessage(
-        message, this.originUp
-      );
-    }
-
-    receiveMessageDown(event) {
-      const data = JSON.parse(event.data);
-      switch (data.func) {
-        case "playing":
-          this.sendMessageUp(data.func, data.args);
-          break;
-        default:
-          break;
-      }
-    }
-  }
-
   new VideoEventProxy(document.querySelector('iframe'));
-
 </script>
 </body>
 </html>

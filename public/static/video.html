@@ -40,6 +40,10 @@
   class VideoTracker {
     constructor(iframe) {
       this.secondsPlay = 0;
+      this.title = null;
+      this.tags = null;
+      this.categories = null;
+
       this.index = null;
       this.iframe = iframe;
       this.origin = "*";
@@ -87,28 +91,32 @@
       switch (data.func) {
         case "playing":
           if(data.args ===true) {
-            this.track({
-              playing: true,
-              src: data.src,
-            });
+            this.track();
           }
+          break;
+        case "metadata":
+          this.setMetaData(data.args);
           break;
         default:
           break;
       }
     }
 
-    track(data) {
+    track() {
       this.secondsPlay += 1;
-      console.log("Played: " + this.secondsPlay + ", src:" + data.src);
+      console.log("Played: " + this.secondsPlay + ", title:" + this.metaData.title);
       this.index = eventTracker.trackLater('playtime', {
         eventCustomData: {
           playtime: {
             secondsPlay: this.secondsPlay,
-            src: data.src,
+            metaData: this.metaData,
           }
         }
       }, this.index);
+    }
+
+    setMetaData(data) {
+      this.metaData = data;
     }
   }
 

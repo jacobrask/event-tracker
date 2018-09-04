@@ -50,6 +50,7 @@ Webpack based event tracking library (Input: ES6, Output: universal library)
     trackHashChanges: true,
     trackElementClicks: true,
     trackPageViews: true,
+    trackActiveTime: true,
     waitOnTracker: false
   }, {
     context: {
@@ -66,7 +67,7 @@ Webpack based event tracking library (Input: ES6, Output: universal library)
     user: {
       'paywayId': '59d1d331996e590006001978',
       'userId': '59d1d331996e590006001978',
-      'state': 'logged_in',
+      'states': ['logged_in'],
       'products': [
         'test-product'
       ],
@@ -77,7 +78,7 @@ Webpack based event tracking library (Input: ES6, Output: universal library)
       'location': 'Stockholm'
     },
     content: {
-      'state': 'open',
+      'states': ['open'],
       'articleId': '1234',
       'section': null,
       'keywords': [
@@ -96,7 +97,7 @@ Webpack based event tracking library (Input: ES6, Output: universal library)
     {
       'paywayId': '2b2222222222222222222222',
       'userId': '2b2222222222222222222222',
-      'state': 'logged_in',
+      'states': ['logged_in'],
       'products': [
         'test-product-2'
       ],

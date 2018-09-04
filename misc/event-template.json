@@ -4,21 +4,21 @@
   id on anon users that would be the same on different
   domains and possibly different platforms. We have found
   that actual javascript fingerprints does not work that
-  well and would require chaining between fingerprint_id and
-  client_id because of fingerprints changing due to browser
+  well and would require chaining between fingerprintId and
+  clientId because of fingerprints changing due to browser
   upgrades for example.
   Proposed solution would be to have a third party cookie
   or something similar
-  "fingerprint_id": "",
+  "fingerprintId": "",
   */
 
   /*
-  client_id for browsers:
-  client_id is a generated uuid that is stored in localStorage
+  clientId for browsers:
+  clientId is a generated uuid that is stored in localStorage,
   there for it will be different between different domains
   which isn't optimal.
-  client_id for mobile apps:
-  client_id would be the device id which is different for
+  clientId for mobile apps:
+  clientId would be the device id which is different for
   different apps on the same device and which is also
   subject to change if all apps from the same publisher
   are deleted (at least iphone). Reinstalling a app then will
@@ -27,35 +27,37 @@
   "clientId": "c3c9058c-8548-33d6-5428-e7b054136852",
   /*
   current in browser:
-  session_id is a generated uuid that is stored in the sessionStorage,
+  sessionId is a generated uuid that is stored in the sessionStorage,
   this means that it's different between tabs and is cleared when the
   tab or window is closed.
   current in app:
   not implemented but planned to be generated on app start and app resume.
 
-  There has been discussions about introducing timers and reset session_id
-  after a defined period of inactivity. COuld also be solved with cookies with
+  There has been discussions about introducing timers and reset sessionId
+  after a defined period of inactivity. Could also be solved with cookies with
   TTL.
   */
   "sessionId": "3346c39a-7afe-fa42-9ed6-ae343ec3a1be",
   /*
-  server_timestamp is the time at which the event reached the backend.
-  This can be used of the client_timestamp is invalid or suspicious.
+  serverTimestamp is the time at which the event reached the backend.
+  This can be used instead of the clientTimestamp if it is invalid or suspicious.
+  Though some events are sent on unload ie. when trackLater is used, there might be
+  a difference between serverTimestamp and clientTimestamp ranging from minutes to days.
   */
   "serverTimestamp": "2017-10-04T10:01:39.646Z",
   /*
-  client_timestamp is the time of the event according to the client.
+  clientTimestamp is the time of the event according to the client.
   There are a few outliers here, like events that occur in the future
   or around 1970.
   */
   "clientTimestamp": "2017-10-04T10:01:38.313Z",
   /*
-  remote_ip is added by the server, using x-forwarded-for alternatively
-  remote_ip if there isn't any x-forwarded-for
+  remoteIp is added by the server, using x-forwarded-for alternatively
+  remoteIp if there isn't any x-forwarded-for
   */
   "remoteIp": "95.195.195.105, 162.158.182.67",
   /*
-  event_type is set by the client, browser:<event>, app:<event>.
+  eventType is set by the client, browser:<event>, app:<event>, etc...
   Should preferably say something about the data structure of the event,
   ie. a browser:pageview won't have a target attribute while browser:click
   will.
@@ -63,15 +65,14 @@
   something like browser:clickPurchaseButton1 and browser:clickPurchaseButton2
   should probably be browser:click or maybe browser:clickPurchase and then
   the specific button or link in another attribute like target or some custom
-  attribute in the event_type_data object
+  attribute in the eventCustomData object
   */
   "eventType": "browser:pageview",
   /* version */
   "eventTypeVersion": "1",
   /*
-  other suggestions are event_type_data or event_type_custom_data, event_custom_data and dropping
-  the root data object.
-  Only validated by valid json and length(?)
+  eventCustomData:
+  Data structure to send whatever data that needs to accompany a custom event
   */
   "eventCustomData": {
     /*
@@ -98,6 +99,11 @@
       }
     }
   },
+  /*
+  client generated UUID that is generated on script load to be able to connect events with each other, what click was
+  generated on what pageview and what ad exposures were made on a specific pageview for example
+  */
+  "rootEventId": "c3c9058c-8548-33d6-5428-e7b054136852",
   /*
   client generated UUID generated at the time of the event to be able to
   remove duplicates in selections of events.
@@ -130,6 +136,7 @@
   "content": {
     // content_state is the state that the current content had when the event occurred
     "state": "open|locked|soft_locked|soft_open|paywalled|...",
+    "states": ["open","locked","soft_locked","soft_open","paywalled",".."],
     // article_id is the article id
     "articleId": "xyz",
     "section": null,
@@ -144,18 +151,18 @@
   },
   "user": {
     /*
-    payway_id is the payway id, this id stay the same across
+    paywayId is the payway id, this id stay the same across
     sites and mobile apps though only set for logged in users
     */
     "paywayId": "59d1d331996e590006001978",
     /*
-    user_id is the primary user id, probably the same a another
+    userId is the primary user id, probably the same a another
     of the ids in this object.
     */
     "userId": "59d1d331996e590006001978",
     /*
     Is this enough or do we need more attributes to encompass logged in and subscription state?
-    user_state is the state that the user had when the event occurred
+    user.states is the states that the user had when the event occurred
     */
     "state": "anonymous|logged_in|premium|plus|gold|..",
     "states": ["anonymous","logged_in","premium","plus","gold",".."],
@@ -206,6 +213,10 @@
     },
     // optional for app events
     "browser": {
+      // Was a adblocker detected
+      "adBlocker": false,
+      // Is the au string a known crawler
+      "bot": false,
       "version": 11,
       "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Safari/604.1.38",
       "plugins": null,

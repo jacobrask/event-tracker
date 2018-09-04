@@ -32,7 +32,7 @@ const eventTracker = new EventTracker.EventTracker({
   user: {
     'paywayId': '59d1d331996e590006001978',
     'userId': '59d1d331996e590006001978',
-    'state': 'logged_in',
+    'states': ['logged_in'],
     'products': [
       'test-product'
     ],
@@ -43,7 +43,7 @@ const eventTracker = new EventTracker.EventTracker({
     'location': 'Stockholm'
   },
   content: {
-    'state': 'open',
+    'states': ['open'],
     'articleId': '1234',
     'section': null,
     'keywords': [

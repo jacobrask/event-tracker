@@ -6327,7 +6327,6 @@ var ConsoleTracker = function () {
       this.filters = config.filters;
       this._tracker = this._filterAndTrack.bind(this);
     } else {
-      console.log('bind track');
       this._tracker = this._track.bind(this);
     }
   }
@@ -6343,7 +6342,6 @@ var ConsoleTracker = function () {
       var value = info.value;
 
       if (typeof console !== 'undefined') {
-        console.log('_track');
         console.log(value);
 
         info.success && setTimeout(info.success, 0);
@@ -6407,7 +6405,6 @@ var HttpTracker = function () {
       this.filters = config.filters;
       this._tracker = this._filterAndTrack.bind(this);
     } else {
-      console.log('bind track');
       this._tracker = this._track.bind(this);
     }
   }
@@ -6420,17 +6417,15 @@ var HttpTracker = function () {
   }, {
     key: '_track',
     value: function _track(info) {
-      console.log('_track');
       var xhr = new XMLHttpRequest();
 
       if (navigator.sendBeacon) {
         if (navigator.sendBeacon(this.url, JSON.stringify(info.value))) {
-          console.log(info.value);
           typeof info.success === 'function' && info.success(null, null);
           return;
         }
       }
-      console.log('sent');
+
       xhr.open('POST', this.url, false);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.withCredentials = true;

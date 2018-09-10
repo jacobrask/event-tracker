@@ -6,7 +6,7 @@ const path = require('path');
 const env = require('yargs').argv.env; // use --env with webpack 2
 
 let libraryName = 'EventTracker';
-let libraryFilename = 'et';
+let libraryFilename = 'event-tracker';
 let plugins = [], outputFile;
 
 if (env === 'build') {
@@ -18,7 +18,7 @@ if (env === 'build') {
 
 const config = {
   entry: [__dirname + '/src/index.js'],
-  //devtool: 'source-map',
+  // devtool: 'source-map',
   output: {
     path: __dirname + '/dist',
     filename: outputFile,

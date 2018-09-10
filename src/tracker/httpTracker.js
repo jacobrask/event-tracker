@@ -6,6 +6,8 @@ export default class HttpTracker {
     }
     this.config = config;
     this.url = config.url;
+    // This is because if a bug in chrome for ios (https://bugs.chromium.org/p/chromium/issues/detail?id=878562)
+    this.first = true;
     if (config.filters) {
       this.filters = config.filters;
       this._tracker = this._filterAndTrack.bind(this);
@@ -21,19 +23,24 @@ export default class HttpTracker {
   _track(info) {
     const xhr = new XMLHttpRequest();
 
-    if (navigator.sendBeacon) {
+    // !this.first is because if a bug in chrome for ios (https://bugs.chromium.org/p/chromium/issues/detail?id=878562)
+    if (!this.first && navigator.sendBeacon) {
       if (navigator.sendBeacon(this.url, JSON.stringify(info.value))) {
         typeof info.success === 'function' && info.success(null, null);
         return;
       }
     }
 
-    xhr.open('POST', this.url, false);
-    xhr.setRequestHeader('Content-Type', 'application/json');
+    // this.first is because if a bug in chrome for ios (https://bugs.chromium.org/p/chromium/issues/detail?id=878562)
+    xhr.open('POST', this.url, this.first);
+    xhr.setRequestHeader('Content-Type', 'text/plain');
     xhr.withCredentials = true;
     xhr.onload = info.success;
     xhr.onerror = info.failure;
     xhr.send(JSON.stringify(info.value));
+
+    // This is because if a bug in chrome for ios (https://bugs.chromium.org/p/chromium/issues/detail?id=878562)
+    this.first = false;
   }
 
   _filterAndTrack(info) {

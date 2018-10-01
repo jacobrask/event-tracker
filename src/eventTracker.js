@@ -253,14 +253,19 @@ export default class EventTracker {
     if (this.options.trackActiveTime) {
       const trackTime = {
         trackIndex: null,
+        startTime: null,
+        endTime: null,
         secondsActive: 0,
         lastActive: null,
         updateTime: function () {
           if (this.lastActive !== null && (Date.now() - this.lastActive) / 1000 < 5) {
             this.secondsActive = this.secondsActive + 1;
+            this.startTime = this.startTime || (new Date()).toISOString();
             this.trackIndex = self.trackLater('activetime', {
               eventCustomData: {
                 activetime: {
+                  startTime: this.startTime,
+                  endTime: (new Date()).toISOString(),
                   secondsActive: this.secondsActive
                 }
               }

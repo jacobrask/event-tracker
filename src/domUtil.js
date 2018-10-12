@@ -111,7 +111,7 @@ DomUtil.genCssSelector = node => {
 
   while (node !== document.body) {
     let id = node.id;
-    let classes = node.className.split(' ').join('.');
+    let classes = (node.getAttribute('class') || '').split(' ').join('.');
     const tagName = node.nodeName.toLowerCase();
 
     if (id && id !== '') id = `#${id}`;

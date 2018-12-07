@@ -8,7 +8,7 @@ const eventTracker = new EventTracker.EventTracker({
       EventTracker.Filters.BotFilter
     ]
   }),
-  trackClicks: false,
+  trackClicks: true,
   trackActiveTime: true,
   trackHashChanges: true,
   trackElementClicks: true,
